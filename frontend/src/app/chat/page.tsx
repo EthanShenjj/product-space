@@ -70,31 +70,28 @@ function ChatContent() {
     }
 
     return (
-        <div className="h-[calc(100dvh-64px)] min-h-[calc(100dvh-64px)] w-full">
-            {/* 顶部工具栏 */}
-            <div className="absolute top-2 right-4 flex items-center gap-2 z-30">
-                {user && (
-                    <>
-                        <button
-                            onClick={() => setIsHistoryOpen(true)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-black hover:bg-gray-100 rounded-lg transition-colors"
-                        >
-                            <History className="w-4 h-4" />
-                            <span className="hidden sm:inline">历史对话</span>
-                        </button>
-                        <button
-                            onClick={logout}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-black hover:bg-gray-100 rounded-lg transition-colors"
-                        >
-                            <LogOut className="w-4 h-4" />
-                            <span className="hidden sm:inline">退出</span>
-                        </button>
-                    </>
-                )}
-            </div>
-
+        <div className="h-[calc(100dvh-64px)] min-h-[calc(100dvh-64px)] w-full relative">
             <div className="grid h-full max-w-6xl mx-auto w-full lg:grid-cols-[1fr_320px] gap-6 px-4">
                 <div className="flex flex-col min-h-0">
+                    {/* 顶部工具栏 - 历史对话和退出按钮 */}
+                    {user && (
+                        <div className="flex items-center justify-end gap-2 py-2 -mb-2">
+                            <button
+                                onClick={() => setIsHistoryOpen(true)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-black hover:bg-gray-100 rounded-lg transition-colors"
+                            >
+                                <History className="w-4 h-4" />
+                                <span>历史对话</span>
+                            </button>
+                            <button
+                                onClick={logout}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-black hover:bg-gray-100 rounded-lg transition-colors"
+                            >
+                                <LogOut className="w-4 h-4" />
+                                <span>退出</span>
+                            </button>
+                        </div>
+                    )}
                     <PhaseIndicator currentStage={currentStage} />
                     <MessageList
                         messages={messages}
