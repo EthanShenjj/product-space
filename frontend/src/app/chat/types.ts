@@ -5,6 +5,7 @@ export interface Message {
 }
 
 export interface Summary {
+    productTitle: string;
     product: string;
     aiAdvice: string;
     userNotes: string;

@@ -37,6 +37,8 @@ CREATE TABLE IF NOT EXISTS conversations (
   summary JSONB,
   stage VARCHAR(50) DEFAULT 'info',
   message_count INTEGER DEFAULT 0,
+  starred BOOLEAN DEFAULT FALSE,
+  starred_at TIMESTAMPTZ,
   ip_address TEXT,
   user_agent TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -49,6 +51,12 @@ CREATE INDEX IF NOT EXISTS idx_conversations_created_at ON conversations(created
 -- 兼容已有表结构
 ALTER TABLE conversations ADD COLUMN IF NOT EXISTS ip_address TEXT;
 ALTER TABLE conversations ADD COLUMN IF NOT EXISTS user_agent TEXT;
+ALTER TABLE conversations ADD COLUMN IF NOT EXISTS starred BOOLEAN DEFAULT FALSE;
+ALTER TABLE conversations ADD COLUMN IF NOT EXISTS starred_at TIMESTAMPTZ;
+ALTER TABLE conversations ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES users(id);
+ALTER TABLE conversations ADD COLUMN IF NOT EXISTS title TEXT;
+
+CREATE INDEX IF NOT EXISTS idx_conversations_user_id ON conversations(user_id);
 
 -- 2.1 创建 Sparks CMS 表（管理后台内容）
 CREATE TABLE IF NOT EXISTS cms_items (
@@ -308,10 +316,52 @@ CREATE POLICY "Allow service role full access to message_feedback_items" ON mess
   FOR ALL USING (true) WITH CHECK (true);
 
 -- =============================================
+-- 10. 用户认证系统
+-- =============================================
+
+-- 用户表
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  nickname VARCHAR(100),
+  avatar_url TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  last_login_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow service role full access to users" ON users
+  FOR ALL USING (true) WITH CHECK (true);
+
+-- 验证码表（注册验证 + 忘记密码）
+CREATE TABLE IF NOT EXISTS verification_codes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email VARCHAR(255) NOT NULL,
+  code VARCHAR(6) NOT NULL,
+  type VARCHAR(20) NOT NULL,  -- 'register' 或 'reset_password'
+  expires_at TIMESTAMPTZ NOT NULL,
+  used BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_verification_codes_email ON verification_codes(email);
+CREATE INDEX IF NOT EXISTS idx_verification_codes_expires_at ON verification_codes(expires_at);
+
+ALTER TABLE verification_codes ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow service role full access to verification_codes" ON verification_codes
+  FOR ALL USING (true) WITH CHECK (true);
+
+-- =============================================
 -- 完成！
 --
 -- 接下来需要在 .env.local 中配置：
 -- NEXT_PUBLIC_SUPABASE_URL=你的项目URL
 -- NEXT_PUBLIC_SUPABASE_ANON_KEY=你的anon key
 -- SUPABASE_SERVICE_ROLE_KEY=你的service role key
+-- RESEND_API_KEY=你的Resend API Key
 -- =============================================

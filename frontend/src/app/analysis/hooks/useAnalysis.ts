@@ -82,20 +82,18 @@ function extractAnalysisResult(text: string): {
 
 export function useAnalysis(summary: Summary) {
   const [state, setState] = useState<AnalysisState>(initialState);
-  const ALLOWED_SCORES = [0, 2, 5, 8, 10];
+  const ALLOWED_SCORES = [0, 1, 2, 5, 8, 10];
 
   const snapScore = (score: number) => {
-    if (Number.isNaN(score)) return 5;
-    let closest = ALLOWED_SCORES[0];
-    let minDiff = Math.abs(score - closest);
-    for (const candidate of ALLOWED_SCORES) {
-      const diff = Math.abs(score - candidate);
-      if (diff < minDiff) {
-        minDiff = diff;
-        closest = candidate;
-      }
-    }
-    return closest;
+    if (Number.isNaN(score)) return 2;
+    if (score <= 0.5) return 0;
+    if (score <= 1.5) return 1;
+    if (score <= 2.5) return 2;
+    if (score <= 4.5) return 2;
+    if (score <= 5.5) return 5;
+    if (score <= 7.5) return 8;
+    if (score <= 9.0) return 8;
+    return 10;
   };
 
   const clampScore = (score: number, cap: number) => {
@@ -105,7 +103,20 @@ export function useAnalysis(summary: Summary) {
     return allowedUnderCap.length ? Math.min(snapped, allowedUnderCap[allowedUnderCap.length - 1]) : 0;
   };
 
-  const snapOverallScore = (score: number) => snapScore(score);
+  const shouldAllowFive = (summary: Summary, analysisText: string) => {
+    const product = summary.product || '';
+    const normalized = `${product}\n${analysisText}`.replace(/\s+/g, '');
+    const hasUser = /用户|人群|目标用户|画像/.test(product);
+    const hasScenario = /场景|使用|任务|行为|流程/.test(product);
+    const hasValue = /价值|解决|收益|提升|痛点|优势/.test(product);
+    const hasContradiction = /不清晰|矛盾|同质化|无差异化|缺乏竞争力|价值主张不清/.test(normalized);
+    return hasUser && hasScenario && hasValue && !hasContradiction;
+  };
+
+  const detectConceptWeakness = (analysisText: string) => {
+    const normalized = analysisText.replace(/\s+/g, '');
+    return /概念不清晰|价值主张不清|缺乏竞争力|无差异化|同质化|定位不清/.test(normalized);
+  };
 
   const detectCaseMention = (text: string) => {
     const normalized = text.replace(/\s+/g, '');
@@ -118,6 +129,8 @@ export function useAnalysis(summary: Summary) {
     const adviceLines = scoreLineCount(summary.aiAdvice || '');
     const notesLines = scoreLineCount(summary.userNotes || '');
     const hasCases = (summary.cases || []).length > 0;
+    const hasValidation = /验证|数据|指标|反馈|转化|付费|留存|复购|试点|上线|测试/.test(summary.product || '');
+    const hasStage = /阶段|Demo|MVP|测试|上线|试点/.test(summary.product || '');
 
     let clarity = 0;
     if (productLines >= 2) clarity += 2;
@@ -126,11 +139,23 @@ export function useAnalysis(summary: Summary) {
     if (adviceLines >= 2) clarity += 1;
     if (hasCases) clarity += 1;
 
-    // 0-2: 极不清晰; 3-4: 较模糊; 5-6: 基本清晰
-    if (clarity <= 2) return 2;
-    if (clarity <= 4) return 5;
-    if (clarity <= 6) return 8;
+    // 0-1: 极不清晰; 2-4: 较模糊; 5-6: 基本清晰
+    if (clarity <= 1) return 1;
+    if (clarity <= 4) return 2;
+    if (clarity <= 5) return 5;
+    if (clarity <= 6) return hasValidation || hasStage ? 8 : 5;
     return 10;
+  };
+
+  const computeOverallScore = (analyses: ExpertAnalysis[]) => {
+    if (!analyses.length) return 0;
+    const scores = analyses.map(a => a.score);
+    const count5 = scores.filter(score => score === 5).length;
+    if (count5 >= Math.ceil(scores.length / 2)) return 5;
+    const avg = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+    const snapped = snapScore(avg);
+    if (snapped !== 5) return snapped;
+    return avg < 5 ? 2 : 8;
   };
 
   const startAnalysis = useCallback(
@@ -219,8 +244,11 @@ export function useAnalysis(summary: Summary) {
           // 提取结构化结果
           const result = extractAnalysisResult(fullText);
           const cap = computeClarityCap(summary);
-          const adjustedScore = clampScore(result.score, cap);
+          let adjustedScore = clampScore(result.score, cap);
           const needsCaseSupplement = !detectCaseMention(fullText) && !(summary.cases || []).length;
+          const allowFive = shouldAllowFive(summary, fullText);
+          if (adjustedScore === 5 && !allowFive) adjustedScore = 2;
+          if (adjustedScore > 1 && detectConceptWeakness(fullText)) adjustedScore = 1;
 
           // 更新完成状态
           setState((prev) => ({
@@ -260,7 +288,7 @@ export function useAnalysis(summary: Summary) {
           completedAnalyses.length > 0
             ? completedAnalyses.reduce((sum, a) => sum + a.score, 0) / completedAnalyses.length
             : 0;
-        const overallScore = snapOverallScore(overallRaw);
+        const overallScore = computeOverallScore(completedAnalyses);
 
         return {
           ...prev,

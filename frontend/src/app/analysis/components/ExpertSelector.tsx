@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 import { EXPERTS, getRecommendedExperts, EXPERT_CATEGORIES } from '@/data/experts';
 import { ExpertCard } from './ExpertCard';
@@ -35,6 +35,7 @@ export function ExpertSelector({ summary, onStartAnalysis }: ExpertSelectorProps
   const [selectedPersonaIds, setSelectedPersonaIds] = useState<string[]>([]);
   const [personaLoading, setPersonaLoading] = useState(false);
   const [personaError, setPersonaError] = useState('');
+  const autoStartRef = useRef(false);
 
   const recommendedExperts = getRecommendedExperts(productType);
 
@@ -53,7 +54,7 @@ export function ExpertSelector({ summary, onStartAnalysis }: ExpertSelectorProps
     );
   };
 
-  const handleStart = () => {
+  const handleStart = useCallback(() => {
     if (selectedExperts.length === 0) return;
     const selectedList = personas.filter(p => selectedPersonaIds.includes(p.id));
     const targetUserDescription = selectedList.length
@@ -62,7 +63,7 @@ export function ExpertSelector({ summary, onStartAnalysis }: ExpertSelectorProps
           .join('\n')
       : undefined;
     onStartAnalysis(selectedExperts, productType, userGoal, targetUserDescription);
-  };
+  }, [selectedExperts, personas, selectedPersonaIds, onStartAnalysis, productType, userGoal]);
 
   const loadPersonas = async () => {
     setPersonaError('');
@@ -94,6 +95,15 @@ export function ExpertSelector({ summary, onStartAnalysis }: ExpertSelectorProps
     if (!summary?.product) return;
     void loadPersonas();
   }, [summary, productType]);
+
+  useEffect(() => {
+    if (autoStartRef.current) return;
+    if (personaLoading) return;
+    if (personas.length === 0) return;
+    if (selectedPersonaIds.length === 0) return;
+    autoStartRef.current = true;
+    handleStart();
+  }, [personaLoading, personas.length, selectedPersonaIds.length, handleStart]);
 
   // 按类别分组专家
   const expertsByCategory = EXPERT_CATEGORIES.map((category) => ({

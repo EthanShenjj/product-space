@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { ArrowLeft, MessageSquare, Users, Activity, Eye, RefreshCw } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Users, Activity, Eye, RefreshCw, Star } from 'lucide-react';
 import Link from 'next/link';
 
 interface DailyStat {
@@ -79,6 +79,8 @@ interface Conversation {
   summary: Record<string, unknown>;
   stage: string;
   message_count: number;
+  starred?: boolean;
+  starred_at?: string;
   created_at: string;
   updated_at: string;
 }
@@ -135,8 +137,12 @@ export default function AnalyticsPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'conversations'>('overview');
   const [overview, setOverview] = useState<Overview | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [conversationsTotal, setConversationsTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(20);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [starringId, setStarringId] = useState<string | null>(null);
   const [usageData, setUsageData] = useState<UsageData | null>(null);
   const [usageLoading, setUsageLoading] = useState(false);
   const [usageError, setUsageError] = useState('');
@@ -215,13 +221,45 @@ export default function AnalyticsPage() {
   }, [fetchData]);
 
   const loadConversations = useCallback(async () => {
-    const data = await fetchData('conversations');
-    if (data) setConversations(data.conversations || []);
-  }, [fetchData]);
+    const offset = (page - 1) * pageSize;
+    const data = await fetchData(`conversations&limit=${pageSize}&offset=${offset}`);
+    if (data) {
+      setConversations(data.conversations || []);
+      setConversationsTotal(data.total || 0);
+    }
+  }, [fetchData, page, pageSize]);
 
   const viewConversation = async (id: string) => {
     const data = await fetchData(`conversation&id=${id}`);
     if (data) setSelectedConversation(data.conversation);
+  };
+
+  const toggleStar = async (id: string, starred: boolean) => {
+    setStarringId(id);
+    try {
+      const res = await fetch('/api/admin/conversation-star', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, starred }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || '更新失败');
+      }
+      const data = await res.json();
+      setConversations(prev =>
+        prev.map(conv =>
+          conv.id === id ? { ...conv, starred: data.starred, starred_at: data.starred_at } : conv
+        )
+      );
+      setSelectedConversation(prev =>
+        prev && prev.id === id ? { ...prev, starred: data.starred, starred_at: data.starred_at } : prev
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '星标更新失败');
+    } finally {
+      setStarringId(null);
+    }
   };
 
   const filteredConversations = useMemo(() => {
@@ -230,9 +268,13 @@ export default function AnalyticsPage() {
     return conversations.filter((conv) =>
       conv.session_id.toLowerCase().includes(q) ||
       (conv.ip_address || '').toLowerCase().includes(q) ||
-      (conv.invite_code || '').toLowerCase().includes(q)
+      (conv.invite_code || '').toLowerCase().includes(q) ||
+      String(conv.summary?.productTitle || '').toLowerCase().includes(q) ||
+      String(conv.summary?.product || '').toLowerCase().includes(q)
     );
   }, [conversations, searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(conversationsTotal / pageSize));
 
   // 尝试基于 cookie 自动登录
   useEffect(() => {
@@ -272,6 +314,12 @@ export default function AnalyticsPage() {
     }
   }, [isAuthenticated, activeTab, loadOverview, loadConversations, fetchUsage]);
 
+  useEffect(() => {
+    if (activeTab === 'conversations') {
+      setPage(1);
+    }
+  }, [activeTab, searchQuery]);
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -302,6 +350,7 @@ export default function AnalyticsPage() {
   if (selectedConversation) {
     const summary = selectedConversation.summary || {};
     const summaryItems = [
+      { label: '产品摘要', value: summary.productTitle as string | undefined },
       { label: '产品定义', value: summary.product as string | undefined },
       { label: 'AI 建议', value: summary.aiAdvice as string | undefined },
       { label: '用户要点', value: summary.userNotes as string | undefined },
@@ -338,14 +387,28 @@ export default function AnalyticsPage() {
                     创建时间: {new Date(selectedConversation.created_at).toLocaleString('zh-CN')}
                   </p>
                 </div>
-              <span className={`px-3 py-1 rounded-full text-sm ${
-                selectedConversation.stage === 'analysis' ? 'bg-green-100 text-green-700' :
-                selectedConversation.stage === 'deep' ? 'bg-blue-100 text-blue-700' :
-                'bg-gray-100 text-gray-700'
-              }`}>
-                {selectedConversation.stage === 'analysis' ? '多视角分析' :
-                 selectedConversation.stage === 'deep' ? '深度追问' : '信息收集'}
-              </span>
+              <div className="flex items-center gap-3">
+                <button
+                  className="flex items-center gap-1 text-sm text-gray-500 hover:text-yellow-600"
+                  onClick={() => toggleStar(selectedConversation.id, !selectedConversation.starred)}
+                  disabled={starringId === selectedConversation.id}
+                >
+                  <Star
+                    size={16}
+                    className={selectedConversation.starred ? 'text-yellow-500' : 'text-gray-400'}
+                    fill={selectedConversation.starred ? 'currentColor' : 'none'}
+                  />
+                  {selectedConversation.starred ? '已收藏' : '收藏'}
+                </button>
+                <span className={`px-3 py-1 rounded-full text-sm ${
+                  selectedConversation.stage === 'analysis' ? 'bg-green-100 text-green-700' :
+                  selectedConversation.stage === 'deep' ? 'bg-blue-100 text-blue-700' :
+                  'bg-gray-100 text-gray-700'
+                }`}>
+                  {selectedConversation.stage === 'analysis' ? '多视角分析' :
+                   selectedConversation.stage === 'deep' ? '深度追问' : '信息收集'}
+                </span>
+              </div>
             </div>
               <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                 {summaryItems.length ? (
@@ -878,7 +941,9 @@ export default function AnalyticsPage() {
           <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
             <div className="p-6 border-b border-gray-100">
               <h2 className="text-lg font-bold">对话记录</h2>
-              <p className="text-sm text-gray-500 mt-1">共 {filteredConversations.length} 条对话</p>
+              <p className="text-sm text-gray-500 mt-1">
+                共 {conversationsTotal} 条对话 · 第 {page} / {totalPages} 页
+              </p>
               <input
                 className="mt-4 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
                 placeholder="按 session_id 或 IP 搜索"
@@ -889,51 +954,87 @@ export default function AnalyticsPage() {
             {filteredConversations.length === 0 ? (
               <div className="p-12 text-center text-gray-500">暂无对话记录</div>
             ) : (
-              <div className="divide-y divide-gray-100">
-                {filteredConversations.map((conv) => (
-                  <div
-                    key={conv.id}
-                    className="p-6 hover:bg-gray-50 cursor-pointer"
-                    onClick={() => viewConversation(conv.id)}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className={`px-2 py-0.5 rounded text-xs ${
-                            conv.stage === 'analysis' ? 'bg-green-100 text-green-700' :
-                            conv.stage === 'deep' ? 'bg-blue-100 text-blue-700' :
-                            'bg-gray-100 text-gray-700'
-                          }`}>
-                            {conv.stage === 'analysis' ? '多视角分析' :
-                             conv.stage === 'deep' ? '深度追问' : '信息收集'}
-                          </span>
-                          {conv.invite_code ? (
-                            <span className="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-600">
-                              邀请码：{conv.invite_code}
+              <>
+                <div className="divide-y divide-gray-100">
+                  {filteredConversations.map((conv) => (
+                    <div
+                      key={conv.id}
+                      className="p-6 hover:bg-gray-50 cursor-pointer"
+                      onClick={() => viewConversation(conv.id)}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`px-2 py-0.5 rounded text-xs ${
+                              conv.stage === 'analysis' ? 'bg-green-100 text-green-700' :
+                              conv.stage === 'deep' ? 'bg-blue-100 text-blue-700' :
+                              'bg-gray-100 text-gray-700'
+                            }`}>
+                              {conv.stage === 'analysis' ? '多视角分析' :
+                               conv.stage === 'deep' ? '深度追问' : '信息收集'}
                             </span>
+                            {conv.invite_code ? (
+                              <span className="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-600">
+                                邀请码：{conv.invite_code}
+                              </span>
+                            ) : null}
+                            <span className="text-sm text-gray-500">{conv.message_count} 条消息</span>
+                          </div>
+                          {conv.ip_address ? (
+                            <p className="text-xs text-gray-400">IP: {conv.ip_address}</p>
                           ) : null}
-                          <span className="text-sm text-gray-500">{conv.message_count} 条消息</span>
-                        </div>
-                        {conv.ip_address ? (
-                          <p className="text-xs text-gray-400">IP: {conv.ip_address}</p>
-                        ) : null}
-                        {conv.summary?.product ? (
+                        {conv.summary?.productTitle || conv.summary?.product ? (
                           <p className="text-xs text-gray-500 mt-1">
-                            总结：{String(conv.summary.product).slice(0, 80)}
+                            产品：{String(conv.summary.productTitle || conv.summary.product).slice(0, 80)}
                           </p>
                         ) : null}
-                        <p className="text-sm text-gray-600 truncate">
-                          {conv.messages[1]?.content || '无内容'}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-1">
-                          {new Date(conv.created_at).toLocaleString('zh-CN')}
-                        </p>
+                          <p className="text-sm text-gray-600 truncate">
+                            {conv.messages[1]?.content || '无内容'}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {new Date(conv.created_at).toLocaleString('zh-CN')}
+                          </p>
+                        </div>
+                      <div className="flex items-center gap-3 ml-4 flex-shrink-0">
+                        <button
+                          className="text-gray-400 hover:text-yellow-600"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            toggleStar(conv.id, !conv.starred);
+                          }}
+                          disabled={starringId === conv.id}
+                          aria-label={conv.starred ? '取消收藏' : '收藏'}
+                        >
+                          <Star
+                            size={18}
+                            className={conv.starred ? 'text-yellow-500' : 'text-gray-400'}
+                            fill={conv.starred ? 'currentColor' : 'none'}
+                          />
+                        </button>
+                        <Eye size={20} className="text-gray-400" />
                       </div>
-                      <Eye size={20} className="text-gray-400 ml-4 flex-shrink-0" />
                     </div>
                   </div>
                 ))}
               </div>
+                <div className="flex items-center justify-between p-4 border-t border-gray-100 text-sm text-gray-600">
+                  <button
+                    className="px-3 py-1 rounded border border-gray-200 disabled:opacity-50"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page <= 1}
+                  >
+                    上一页
+                  </button>
+                  <span>第 {page} / {totalPages} 页</span>
+                  <button
+                    className="px-3 py-1 rounded border border-gray-200 disabled:opacity-50"
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page >= totalPages}
+                  >
+                    下一页
+                  </button>
+                </div>
+              </>
             )}
           </div>
         )}

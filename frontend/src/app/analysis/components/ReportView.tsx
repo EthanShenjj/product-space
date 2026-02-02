@@ -23,25 +23,29 @@ export function ReportView({ summary, analyses, userGoal = 'validate', onBack, o
   const reportRef = useRef<HTMLDivElement>(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const completedAnalyses = analyses.filter((a) => a.status === 'completed');
-  const ALLOWED_SCORES = [0, 2, 5, 8, 10];
+  const ALLOWED_SCORES = [0, 1, 2, 5, 8, 10];
   const snapScore = (score: number) => {
-    if (Number.isNaN(score)) return 5;
-    let closest = ALLOWED_SCORES[0];
-    let minDiff = Math.abs(score - closest);
-    for (const candidate of ALLOWED_SCORES) {
-      const diff = Math.abs(score - candidate);
-      if (diff < minDiff) {
-        minDiff = diff;
-        closest = candidate;
-      }
-    }
-    return closest;
+    if (Number.isNaN(score)) return 2;
+    if (score <= 0.5) return 0;
+    if (score <= 1.5) return 1;
+    if (score <= 2.5) return 2;
+    if (score <= 4.5) return 2;
+    if (score <= 5.5) return 5;
+    if (score <= 7.5) return 8;
+    if (score <= 9.0) return 8;
+    return 10;
   };
-  const overallRaw =
-    completedAnalyses.length > 0
-      ? completedAnalyses.reduce((sum, a) => sum + a.score, 0) / completedAnalyses.length
-      : 0;
-  const overallScore = snapScore(overallRaw);
+  const computeOverallScore = () => {
+    if (!completedAnalyses.length) return 0;
+    const scores = completedAnalyses.map(a => a.score);
+    const count5 = scores.filter(score => score === 5).length;
+    if (count5 >= Math.ceil(scores.length / 2)) return 5;
+    const avg = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+    const snapped = snapScore(avg);
+    if (snapped !== 5) return snapped;
+    return avg < 5 ? 2 : 8;
+  };
+  const overallScore = computeOverallScore();
 
   const getScoreRationale = () => {
     const linesCount = (text: string) => text.split('\n').map(l => l.trim()).filter(Boolean).length;
@@ -52,6 +56,12 @@ export function ReportView({ summary, analyses, userGoal = 'validate', onBack, o
     const hasValidation = /验证|数据|指标|反馈|转化|付费|留存|复购|试点|上线|测试/.test(summary.product || '');
     const hasStage = /阶段|Demo|MVP|测试|上线|试点/.test(summary.product || '');
 
+    if (overallScore <= 0) {
+      return '综合评分极低，主要因为信息极不完整，无法判断产品的可行性与方向。建议先补齐最小可描述的用户、场景与问题。';
+    }
+    if (overallScore <= 1) {
+      return '综合评分偏低，主要因为概念不清晰或缺乏竞争力，价值主张存在明显缺口。建议先澄清核心问题与差异化，再进入方案细化。';
+    }
     if (overallScore <= 2) {
       return '综合评分偏低，主要因为当前信息较少或较分散，产品定位与关键场景仍不清晰，缺少可验证的证据。建议先补齐目标用户、核心场景与价值主张的最小描述。';
     }
@@ -81,7 +91,9 @@ export function ReportView({ summary, analyses, userGoal = 'validate', onBack, o
       ? '当前方案较成熟'
       : value >= 5
         ? '当前方案处于中等水平'
-        : '当前方案仍偏早期';
+        : value <= 1
+          ? '当前方案概念仍不清晰或缺乏竞争力'
+          : '当前方案仍偏早期';
     switch (category) {
       case 'product':
         return `${base}，从产品价值与用户匹配度看，仍需补齐关键场景与价值主张的验证证据。`;
@@ -134,6 +146,64 @@ export function ReportView({ summary, analyses, userGoal = 'validate', onBack, o
         useCORS: true,
         logging: false,
         backgroundColor: '#f9fafb',
+        onclone: (doc) => {
+          const root = doc.querySelector('[data-pdf-root]') as HTMLElement | null;
+          if (!root) return;
+
+          const view = doc.defaultView;
+          if (!view) return;
+
+          const colorFnPattern = /(oklch|oklab|lab|lch|color-mix|color)\(/i;
+          const shadowColorPattern = /(oklch|oklab|lab|lch|color-mix|color)\([^)]*\)/gi;
+          const scratch = doc.createElement('canvas');
+          scratch.width = 1;
+          scratch.height = 1;
+          const ctx = scratch.getContext('2d');
+          if (!ctx) return;
+
+          const normalizeColor = (value: string) => {
+            if (!value || value === 'transparent') return value;
+            try {
+              const prev = ctx.fillStyle as string;
+              ctx.fillStyle = value;
+              const normalized = ctx.fillStyle as string;
+              ctx.fillStyle = prev;
+              return normalized;
+            } catch {
+              return value;
+            }
+          };
+
+          const applyColor = (el: HTMLElement, prop: keyof CSSStyleDeclaration, value: string) => {
+            if (!value) return;
+            (el.style as any)[prop] = normalizeColor(value);
+          };
+
+          const normalizeElement = (el: HTMLElement) => {
+            const style = view.getComputedStyle(el);
+
+            if (colorFnPattern.test(style.color)) applyColor(el, 'color', style.color);
+            if (colorFnPattern.test(style.backgroundColor)) applyColor(el, 'backgroundColor', style.backgroundColor);
+            if (colorFnPattern.test(style.borderTopColor)) applyColor(el, 'borderTopColor', style.borderTopColor);
+            if (colorFnPattern.test(style.borderRightColor)) applyColor(el, 'borderRightColor', style.borderRightColor);
+            if (colorFnPattern.test(style.borderBottomColor)) applyColor(el, 'borderBottomColor', style.borderBottomColor);
+            if (colorFnPattern.test(style.borderLeftColor)) applyColor(el, 'borderLeftColor', style.borderLeftColor);
+            if (colorFnPattern.test(style.outlineColor)) applyColor(el, 'outlineColor', style.outlineColor);
+            if (colorFnPattern.test(style.textDecorationColor)) applyColor(el, 'textDecorationColor', style.textDecorationColor);
+
+            if (style.boxShadow && shadowColorPattern.test(style.boxShadow)) {
+              el.style.boxShadow = style.boxShadow.replace(shadowColorPattern, (match) => normalizeColor(match));
+            }
+
+            const fill = style.getPropertyValue('fill');
+            if (fill && colorFnPattern.test(fill)) el.style.setProperty('fill', normalizeColor(fill));
+            const stroke = style.getPropertyValue('stroke');
+            if (stroke && colorFnPattern.test(stroke)) el.style.setProperty('stroke', normalizeColor(stroke));
+          };
+
+          normalizeElement(root);
+          root.querySelectorAll<HTMLElement>('*').forEach((el) => normalizeElement(el));
+        },
       });
 
       reportRef.current.style.paddingBottom = previousPadding;
@@ -154,20 +224,32 @@ export function ReportView({ summary, analyses, userGoal = 'validate', onBack, o
       const pageHeightPx = Math.floor(usableHeight * pxPerMm);
       const totalPages = Math.ceil(canvas.height / pageHeightPx);
 
-      const logoCanvas = document.createElement('canvas');
-      logoCanvas.width = 32;
-      logoCanvas.height = 32;
-      const logoCtx = logoCanvas.getContext('2d');
-      if (logoCtx) {
-        logoCtx.fillStyle = '#111111';
-        logoCtx.fillRect(0, 0, 32, 32);
-        logoCtx.fillStyle = '#ffffff';
-        logoCtx.font = 'bold 14px sans-serif';
-        logoCtx.textAlign = 'center';
-        logoCtx.textBaseline = 'middle';
-        logoCtx.fillText('PT', 16, 17);
+      const loadImage = (src: string) => new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+      });
+
+      let headerImageData: string | null = null;
+      let headerImageWidth = 0;
+      let headerImageHeight = 0;
+      try {
+        const headerImage = await loadImage('/pdf-header.png');
+        const headerCanvas = document.createElement('canvas');
+        headerCanvas.width = headerImage.naturalWidth || headerImage.width;
+        headerCanvas.height = headerImage.naturalHeight || headerImage.height;
+        const headerCtx = headerCanvas.getContext('2d');
+        if (headerCtx) {
+          headerCtx.drawImage(headerImage, 0, 0);
+          headerImageData = headerCanvas.toDataURL('image/png');
+          const aspect = headerCanvas.width / headerCanvas.height;
+          headerImageHeight = 8;
+          headerImageWidth = headerImageHeight * aspect;
+        }
+      } catch {
+        headerImageData = null;
       }
-      const logoData = logoCanvas.toDataURL('image/jpeg', 0.92);
 
       for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
         if (pageIndex > 0) pdf.addPage();
@@ -198,10 +280,13 @@ export function ReportView({ summary, analyses, userGoal = 'validate', onBack, o
         const contentY = margin + headerHeight;
 
         // 页眉
-        pdf.addImage(logoData, 'JPEG', margin, margin, 8, 8);
-        pdf.setFontSize(10);
-        pdf.setTextColor(40);
-        pdf.text('ProductThink 报告', margin + 12, margin + 6);
+        if (headerImageData) {
+          pdf.addImage(headerImageData, 'PNG', margin, margin, headerImageWidth, headerImageHeight);
+        } else {
+          pdf.setFontSize(10);
+          pdf.setTextColor(40);
+          pdf.text('ProductThink 报告', margin, margin + 6);
+        }
 
         // 内容
         pdf.addImage(pageImg, 'JPEG', margin, contentY, usableWidth, imgHeight);
@@ -245,7 +330,7 @@ export function ReportView({ summary, analyses, userGoal = 'validate', onBack, o
   const getScoreColor = () => 'text-gray-900';
 
   return (
-    <div ref={reportRef} className="max-w-4xl mx-auto px-4 md:px-6">
+    <div ref={reportRef} data-pdf-root className="max-w-4xl mx-auto px-4 md:px-6">
       {/* 报告头部 */}
       <div className="bg-white border border-gray-200 text-gray-900 rounded-2xl p-8 mb-6 shadow-sm">
         <div className="flex items-center justify-between mb-6">

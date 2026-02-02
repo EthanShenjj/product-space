@@ -53,6 +53,7 @@ export async function POST(req: NextRequest) {
 
 字段格式如下：
 {
+  "productTitle": "一句话产品概述（20 字内）",
   "product": "用户产品情况（目标用户、关键点、阶段），用 2-4 行要点。",
   "aiAdvice": "AI 给出的建议，用 2-4 行要点。",
   "userNotes": "用户的观点/评论/补充，用 2-4 行要点。",
@@ -175,6 +176,7 @@ export async function POST(req: NextRequest) {
         }
 
         return {
+            productTitle: normalizeText(coerceText(obj.productTitle ?? obj.product_title ?? obj.product_summary)),
             product: normalizeText(coerceText(obj.product)),
             aiAdvice: normalizeText(coerceText(obj.aiAdvice)),
             userNotes: normalizeText(coerceText(obj.userNotes)),

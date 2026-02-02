@@ -23,6 +23,12 @@ const getSessionId = (): string => {
     return sessionId;
 };
 
+// 设置会话 ID（用于加载历史会话）
+const setSessionId = (sessionId: string): void => {
+    if (typeof window === 'undefined') return;
+    sessionStorage.setItem('track_session_id', sessionId);
+};
+
 const getInviteCode = (): string => {
     if (typeof window === 'undefined') return '';
     return localStorage.getItem('invite_code') || '';
@@ -239,6 +245,10 @@ const normalizeSummary = (value: unknown): Summary => {
     }
 
     return {
+        productTitle: normalizeLines(
+            normalizeText(coerceText(obj.productTitle ?? obj.product_title ?? obj.product_summary)),
+            1
+        ),
         product: normalizeLines(normalizeText(coerceText(obj.product)), 6),
         aiAdvice: normalizeLines(normalizeText(coerceText(obj.aiAdvice)), 6),
         userNotes: normalizeLines(normalizeText(coerceText(obj.userNotes)), 6),
@@ -345,6 +355,7 @@ const mergeSummary = (prev: Summary, next: Summary): Summary => {
     })();
 
     return {
+        productTitle: mergeText(prev.productTitle, next.productTitle, 1, 1),
         product: mergeText(prev.product, next.product, 1, 6),
         aiAdvice: mergeText(prev.aiAdvice, next.aiAdvice, 1, 6),
         userNotes: mergeText(prev.userNotes, next.userNotes, 1, 6),
@@ -430,6 +441,7 @@ export function useChat() {
     const [isLoading, setIsLoading] = useState(false);
     const [isThinking, setIsThinking] = useState(false);
     const [isSummarizing, setIsSummarizing] = useState(false);
+    const [isLoadingHistory, setIsLoadingHistory] = useState(false);
     const [messages, setMessages] = useState<Message[]>([
         {
             id: '1',
@@ -438,6 +450,7 @@ export function useChat() {
         },
     ]);
     const [summary, setSummary] = useState<Summary>({
+        productTitle: '',
         product: '等待你介绍产品后生成…',
         aiAdvice: '先聊聊你的产品背景，我会持续整理建议。',
         userNotes: '还没有记录到你的观点。',
@@ -454,6 +467,7 @@ export function useChat() {
     });
     const [userMessageCount, setUserMessageCount] = useState(0);
     const [userCharCount, setUserCharCount] = useState(0);
+    const [currentSessionId, setCurrentSessionId] = useState<string>('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const prevStageRef = useRef<Stage | null>(null);
     const shouldScrollRef = useRef(false);
@@ -461,6 +475,11 @@ export function useChat() {
 
     const stageOrder: Stage[] = ['info', 'deep', 'analysis'];
     const [currentStage, setCurrentStage] = useState<Stage>('info');
+
+    // 初始化时获取 sessionId
+    useEffect(() => {
+        setCurrentSessionId(getSessionId());
+    }, []);
 
     useEffect(() => {
         const userSignalScore = Object.values(userSignals).filter(Boolean).length;
@@ -674,6 +693,55 @@ export function useChat() {
         await sendMessage(content, content);
     }, [isLoading, sendMessage]);
 
+    // 加载历史会话
+    const loadConversation = useCallback(async (sessionId: string) => {
+        setIsLoadingHistory(true);
+        try {
+            const res = await fetch(`/api/conversation/${sessionId}`);
+            if (!res.ok) {
+                console.error('Failed to load conversation');
+                return;
+            }
+
+            const data = await res.json();
+            const conv = data.conversation;
+
+            // 设置新的 sessionId
+            setSessionId(sessionId);
+            setCurrentSessionId(sessionId);
+
+            // 恢复消息
+            if (conv.messages && conv.messages.length > 0) {
+                const restoredMessages: Message[] = conv.messages.map((m: { role: string; content: string }, index: number) => ({
+                    id: `restored-${index}`,
+                    role: m.role,
+                    content: m.content,
+                }));
+                setMessages(restoredMessages);
+            }
+
+            // 恢复 summary
+            if (conv.summary) {
+                setSummary(normalizeSummary(conv.summary));
+            }
+
+            // 恢复 stage
+            if (conv.stage) {
+                setCurrentStage(conv.stage as Stage);
+            }
+
+            // 计算用户消息数和字符数
+            const userMsgs = (conv.messages || []).filter((m: { role: string }) => m.role === 'user');
+            setUserMessageCount(userMsgs.length);
+            setUserCharCount(userMsgs.reduce((acc: number, m: { content: string }) => acc + m.content.length, 0));
+
+        } catch (error) {
+            console.error('Error loading conversation:', error);
+        } finally {
+            setIsLoadingHistory(false);
+        }
+    }, []);
+
     const stageConfig: StageConfig = {
         ...stageConfigs[currentStage],
         checklist: stageConfigs[currentStage].checklist.map(item => ({
@@ -688,6 +756,7 @@ export function useChat() {
         isLoading,
         isThinking,
         isSummarizing,
+        isLoadingHistory,
         messages,
         summary,
         messagesEndRef,
@@ -696,7 +765,9 @@ export function useChat() {
         stageConfig,
         deepTurns,
         minDeepTurns: MIN_DEEP_TURNS,
+        currentSessionId,
         handleSend,
         handleQuickSend,
+        loadConversation,
     };
 }
