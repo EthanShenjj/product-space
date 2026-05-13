@@ -11,17 +11,19 @@ export async function POST(req: NextRequest) {
     }
 
     if (!isSupabaseConfigured || !supabaseAdmin) {
-        return new Response(JSON.stringify({ error: 'Supabase not configured' }), { status: 503 });
+        console.warn('[FEEDBACK] Supabase not configured:', { content, contact });
+        return new Response(JSON.stringify({ ok: true, storage: 'console' }), { status: 200 });
     }
 
     const { error } = await supabaseAdmin.from('feedback_items').insert({
-        content,
-        contact,
-        source: 'site',
+      content,
+      contact,
+      source: 'site',
     });
 
     if (error) {
-        return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+        console.error('[FEEDBACK] Supabase insert error:', error);
+        return new Response(JSON.stringify({ ok: true, storage: 'console-fallback' }), { status: 200 });
     }
 
     return new Response(JSON.stringify({ ok: true }), { status: 200 });

@@ -15,15 +15,22 @@ const mapCard = (row: any) => ({
 
 export async function GET() {
     if (!isSupabaseConfigured || !supabaseAdmin) {
-        return NextResponse.json({ error: 'Supabase not configured' }, { status: 503 });
+        return NextResponse.json({ cards: [], storage: 'local-fallback' });
     }
-    const { data, error } = await supabaseAdmin
-        .from('cms_items')
-        .select('*')
-        .eq('status', 'published')
-        .order('updated_at', { ascending: false });
-    if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('cms_items')
+            .select('*')
+            .eq('status', 'published')
+            .order('updated_at', { ascending: false });
+        if (error) {
+            console.error('[CMS] Supabase query error:', error);
+            return NextResponse.json({ cards: [], storage: 'local-fallback' });
+        }
+        return NextResponse.json({ cards: (data || []).map(mapCard) });
+    } catch (error) {
+        console.error('[CMS] Supabase request failed:', error);
+        return NextResponse.json({ cards: [], storage: 'local-fallback' });
     }
-    return NextResponse.json({ cards: (data || []).map(mapCard) });
 }

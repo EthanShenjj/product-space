@@ -29,7 +29,8 @@ export async function POST(req: NextRequest) {
   }
 
   if (!isSupabaseConfigured || !supabaseAdmin) {
-    return new Response(JSON.stringify({ error: 'Supabase not configured' }), { status: 503 });
+    console.warn('[MESSAGE_FEEDBACK] Supabase not configured:', { messageId, vote, comment, stage, sessionId });
+    return new Response(JSON.stringify({ ok: true, storage: 'console' }), { status: 200 });
   }
 
   const ip = getClientIP(req);
@@ -46,7 +47,8 @@ export async function POST(req: NextRequest) {
   });
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    console.error('[MESSAGE_FEEDBACK] Supabase insert error:', error);
+    return new Response(JSON.stringify({ ok: true, storage: 'console-fallback' }), { status: 200 });
   }
 
   return new Response(JSON.stringify({ ok: true }), { status: 200 });

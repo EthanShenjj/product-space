@@ -35,6 +35,7 @@ interface AuthGateProps {
 
 export default function AuthGate({ children }: AuthGateProps) {
   const [user, setUser] = useState<User | null>(null);
+  const [guestMode, setGuestMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [mode, setMode] = useState<FormMode>('login');
 
@@ -49,6 +50,7 @@ export default function AuthGate({ children }: AuthGateProps) {
 
   // 检查登录状态
   useEffect(() => {
+    setGuestMode(sessionStorage.getItem('auth_guest') === '1');
     checkAuth();
   }, []);
 
@@ -77,10 +79,18 @@ export default function AuthGate({ children }: AuthGateProps) {
   const logout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
+      sessionStorage.removeItem('auth_guest');
       setUser(null);
+      setGuestMode(false);
     } catch (err) {
       console.error('Logout failed:', err);
     }
+  };
+
+  const continueAsGuest = () => {
+    sessionStorage.setItem('auth_guest', '1');
+    setGuestMode(true);
+    setError('');
   };
 
   const resetForm = () => {
@@ -264,8 +274,8 @@ export default function AuthGate({ children }: AuthGateProps) {
     );
   }
 
-  // 已登录
-  if (user) {
+  // 已登录或访客模式
+  if (user || guestMode) {
     return (
       <AuthContext.Provider value={{ user, isLoading, logout }}>
         {children}
@@ -318,6 +328,13 @@ export default function AuthGate({ children }: AuthGateProps) {
               className="w-full py-3 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? '登录中...' : '登录'}
+            </button>
+            <button
+              type="button"
+              onClick={continueAsGuest}
+              className="w-full py-3 border border-gray-200 text-gray-700 rounded-xl font-medium hover:border-gray-400 hover:bg-gray-50 transition-colors"
+            >
+              先以访客身份使用
             </button>
             <div className="flex justify-between text-sm">
               <button

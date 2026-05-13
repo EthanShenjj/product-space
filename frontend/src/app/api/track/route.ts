@@ -87,19 +87,13 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('[TRACK] Supabase insert error:', error);
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ success: true, storage: 'console-fallback' });
     }
 
     return NextResponse.json({ success: true, id: data?.id, storage: 'supabase' });
   } catch (error) {
     console.error('[TRACK] Error processing track request:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to process track request' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true, storage: 'console-fallback' });
   }
 }
 
