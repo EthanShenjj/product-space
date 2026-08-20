@@ -13,6 +13,24 @@ FRONTEND_CARDS = os.path.join(ROOT, "frontend", "src", "data", "cards.auto.json"
 CACHE_FILE = os.path.join(ROOT, "backend", ".sparks_summary_cache.json")
 CONFIG_FILE = os.path.join(ROOT, "backend", "sparks_sources.json")
 
+# 从环境变量加载 API 配置（优先 Gemini，其次 OpenRouter）
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_API_BASE = os.environ.get("GEMINI_API_BASE", "")
+GEMINI_CHAT_MODEL = os.environ.get("GEMINI_CHAT_MODEL", "gemini-2.5-flash")
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
+
+# 尝试加载 .env 文件
+try:
+    from dotenv import load_dotenv
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    load_dotenv(os.path.join(base_dir, ".env"))
+    GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", GEMINI_API_KEY)
+    GEMINI_API_BASE = os.environ.get("GEMINI_API_BASE", GEMINI_API_BASE)
+    GEMINI_CHAT_MODEL = os.environ.get("GEMINI_CHAT_MODEL", GEMINI_CHAT_MODEL)
+    OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", OPENROUTER_API_KEY)
+except ImportError:
+    pass
+
 ESSENTIAL_DIRS = [
     "01-产品与设计",
     "02-商业与战略",
@@ -163,16 +181,33 @@ def call_llm_summary(text: str, api_key: str) -> str:
         "请把下面内容提炼成 1-2 句中文知识卡片摘要，要求清晰、可读、可执行，"
         "不要列表，不要引用，不要 markdown。\n\n内容：\n" + text[:4000]
     )
-    response = requests.post(
-        "https://openrouter.ai/api/v1/chat/completions",
-        headers={
+
+    # 优先使用 Gemini OpenAI 兼容接口
+    if GEMINI_API_KEY and GEMINI_API_BASE:
+        model = GEMINI_CHAT_MODEL
+        base_url = GEMINI_API_BASE.rstrip("/") + "/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {GEMINI_API_KEY}",
+            "Content-Type": "application/json",
+        }
+    elif api_key:
+        # OpenRouter fallback
+        model = "anthropic/claude-3.5-sonnet"
+        base_url = "https://openrouter.ai/api/v1/chat/completions"
+        headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
             "HTTP-Referer": os.environ.get("APP_URL", "http://localhost:3002"),
             "X-Title": "ProductThink",
-        },
+        }
+    else:
+        return ""
+
+    response = requests.post(
+        base_url,
+        headers=headers,
         json={
-            "model": "anthropic/claude-3.5-sonnet",
+            "model": model,
             "messages": [
                 {"role": "system", "content": "你是知识卡片写作者，输出简洁中文摘要。"},
                 {"role": "user", "content": prompt},
@@ -187,7 +222,7 @@ def call_llm_summary(text: str, api_key: str) -> str:
 
 
 def summarize_card(text: str, cache: dict[str, str]) -> str:
-    api_key = os.environ.get("OPENROUTER_API_KEY", "")
+    api_key = GEMINI_API_KEY or OPENROUTER_API_KEY
     key = hashlib.md5(text.encode("utf-8")).hexdigest()
     if key in cache:
         return cache[key]

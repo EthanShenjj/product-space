@@ -20,3 +20,19 @@ export interface StageConfig {
     checklist: { label: string; done: boolean }[];
     takeaway: string;
 }
+
+export interface EditableModelConfig {
+    name: string;
+    baseUrl: string;
+    apiKey: string;
+    model: string;
+}
+
+export interface ChatModelConfig {
+    id: string;
+    name: string;
+    baseUrl?: string;
+    apiKey?: string;
+    model: string;
+    isDefault?: boolean;
+}

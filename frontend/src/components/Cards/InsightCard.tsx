@@ -51,9 +51,9 @@ export default function InsightCard({ card, onClick }: InsightCardProps) {
                     {card.source ? `来源：${card.source}` : `— ${card.author}`}
                 </div>
                 <div className="flex flex-wrap justify-end gap-1.5 max-w-[45%]">
-                    {card.tags.slice(0, 3).map(tag => (
+                    {card.tags.slice(0, 3).map((tag, index) => (
                         <span
-                            key={tag}
+                            key={`${card.id}-${tag}-${index}`}
                             className="text-[11px] text-gray-500 bg-gray-100/70 px-2 py-0.5 rounded-full border border-gray-200/60 whitespace-nowrap"
                         >
                             #{tag}

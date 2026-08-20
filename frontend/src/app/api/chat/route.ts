@@ -9,6 +9,13 @@ interface Message {
     content: string;
 }
 
+interface ModelConfig {
+    name?: string;
+    baseUrl?: string;
+    apiKey?: string;
+    model?: string;
+}
+
 async function getKnowledgeContext(query: string): Promise<string> {
     try {
         const response = await fetch(`${BACKEND_URL}/api/knowledge`, {
@@ -27,14 +34,27 @@ async function getKnowledgeContext(query: string): Promise<string> {
     return '';
 }
 
-const resolvePreferredProvider = (_inviteCode?: string) => {
+const resolvePreferredProvider = () => {
     // 无论什么邀请码，都优先使用 Cloudsway，其次 VectorEngine，OpenRouter 兜底
     return undefined;
 };
 
 export async function POST(req: NextRequest) {
-    const { messages, inviteCode } = await req.json();
-    const preferredProvider = resolvePreferredProvider(inviteCode);
+    const { messages, inviteCode, modelConfig } = await req.json();
+    const preferredProvider = resolvePreferredProvider();
+    const customModel: ModelConfig | undefined =
+        modelConfig &&
+        typeof modelConfig === 'object' &&
+        typeof modelConfig.baseUrl === 'string' &&
+        typeof modelConfig.apiKey === 'string' &&
+        typeof modelConfig.model === 'string'
+            ? {
+                name: typeof modelConfig.name === 'string' ? modelConfig.name : 'Custom',
+                baseUrl: modelConfig.baseUrl,
+                apiKey: modelConfig.apiKey,
+                model: modelConfig.model,
+            }
+            : undefined;
 
     // 构建更完整的查询：结合最近几轮对话内容
     const recentMessages = messages.slice(-6); // 最近 3 轮对话
@@ -78,6 +98,7 @@ ${knowledgeContext}
             messages: aiMessages,
             stream: true,
             preferredProvider,
+            customModel,
         });
 
         console.log(`[Chat API] Using provider: ${provider}`, { inviteCode, preferredProvider });

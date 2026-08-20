@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Message, Summary, Stage, StageConfig } from './types';
+import { useModelSettings } from './useModelSettings';
 import { WELCOME_MESSAGE } from '@/data/prompts';
 import {
     trackChatStart,
@@ -437,6 +438,14 @@ const stageConfigs: Record<Stage, Omit<StageConfig, 'checklist'> & { checklist: 
 };
 
 export function useChat() {
+    const {
+        models,
+        selectedModel,
+        selectedModelId,
+        selectModel,
+        addModel,
+        deleteModel,
+    } = useModelSettings();
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isThinking, setIsThinking] = useState(false);
@@ -533,7 +542,9 @@ export function useChat() {
             });
 
             if (!response.ok) {
-                throw new Error('Summary request failed');
+                const errorText = await response.text();
+                console.warn('Summary request failed:', response.status, errorText);
+                return;
             }
 
             const data = await response.json();
@@ -554,7 +565,7 @@ export function useChat() {
                 });
             }
         } catch (error) {
-            console.error('Error calling summary API:', error);
+            console.warn('Error calling summary API:', error);
         } finally {
             setIsSummarizing(false);
         }
@@ -617,6 +628,12 @@ export function useChat() {
                 body: JSON.stringify({
                     messages: currentMessages.map(m => ({ role: m.role, content: m.content })),
                     inviteCode: getInviteCode(),
+                    modelConfig: selectedModel.isDefault ? undefined : {
+                        name: selectedModel.name,
+                        baseUrl: selectedModel.baseUrl,
+                        apiKey: selectedModel.apiKey,
+                        model: selectedModel.model,
+                    },
                 }),
             });
 
@@ -679,7 +696,7 @@ export function useChat() {
             setIsLoading(false);
             setIsThinking(false);
         }
-    }, [isLoading, messages, requestSummary, currentStage, summary]);
+    }, [isLoading, messages, requestSummary, currentStage, summary, selectedModel]);
 
     const handleSend = useCallback(async () => {
         if (!input.trim() || isLoading) return;
@@ -766,6 +783,11 @@ export function useChat() {
         deepTurns,
         minDeepTurns: MIN_DEEP_TURNS,
         currentSessionId,
+        models,
+        selectedModelId,
+        selectModel,
+        addModel,
+        deleteModel,
         handleSend,
         handleQuickSend,
         loadConversation,

@@ -104,7 +104,19 @@ export async function POST(req: NextRequest) {
         text = result.content || '';
     } catch (error) {
         console.error('Summary provider error:', error);
-        return new Response(JSON.stringify({ error: 'Failed to get summary response' }), { status: 500 });
+        return new Response(
+            JSON.stringify({
+                summary: {
+                    productTitle: prevSummary?.productTitle || '待用户补充',
+                    product: prevSummary?.product || '暂无明确结论',
+                    aiAdvice: prevSummary?.aiAdvice || '暂无明确结论',
+                    userNotes: prevSummary?.userNotes || '待用户补充',
+                    cases: Array.isArray(prevSummary?.cases) ? prevSummary.cases : [],
+                },
+                error: 'Failed to get summary response',
+            }),
+            { status: 200 }
+        );
     }
 
     const coerceText = (value: unknown): string => {

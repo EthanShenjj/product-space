@@ -18,6 +18,11 @@ function ChatContent() {
         stageConfig,
         deepTurns,
         minDeepTurns,
+        models,
+        selectedModelId,
+        selectModel,
+        addModel,
+        deleteModel,
         handleSend,
         handleQuickSend,
     } = useChat();
@@ -26,20 +31,25 @@ function ChatContent() {
     const [toast, setToast] = useState<{ title: string; body: string } | null>(null);
 
     useEffect(() => {
+        let nextToast: { title: string; body: string } | null = null;
         if (prevStageRef.current !== currentStage) {
             if (currentStage === 'deep') {
-                setToast({
+                nextToast = {
                     title: '进入 Step 2',
                     body: '我会开始追问关键假设，帮你把问题想清楚～',
-                });
+                };
             } else if (currentStage === 'analysis') {
-                setToast({
+                nextToast = {
                     title: 'Step 3 就绪啦',
                     body: '多视角分析已经准备好，你可以随时进入生成报告。',
-                });
+                };
             }
             prevStageRef.current = currentStage;
         }
+
+        if (!nextToast) return;
+        const timer = setTimeout(() => setToast(nextToast), 0);
+        return () => clearTimeout(timer);
     }, [currentStage]);
 
     useEffect(() => {
@@ -68,6 +78,11 @@ function ChatContent() {
                         summary={summary}
                         currentStage={currentStage}
                         canStartAnalysis={currentStage === 'analysis'}
+                        models={models}
+                        selectedModelId={selectedModelId}
+                        onSelectModel={selectModel}
+                        onAddModel={addModel}
+                        onDeleteModel={deleteModel}
                     />
                 </div>
                 <Sidebar

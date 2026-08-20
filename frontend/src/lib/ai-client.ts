@@ -1,6 +1,6 @@
 /**
  * AI API 客户端 - 支持多个 API 提供商的自动切换
- * 优先使用 VectorEngine，失败时自动切换到 OpenRouter
+ * 优先使用 Gemini，失败时自动切换到下一个提供商
  */
 
 interface Message {
@@ -13,6 +13,14 @@ interface AIRequestOptions {
   stream?: boolean;
   model?: string;
   preferredProvider?: 'Cloudsway' | 'VectorEngine' | 'OpenRouter';
+  customModel?: CustomAIModelConfig;
+}
+
+interface CustomAIModelConfig {
+  name?: string;
+  baseUrl?: string;
+  apiKey?: string;
+  model?: string;
 }
 
 interface AIProvider {
@@ -24,10 +32,106 @@ interface AIProvider {
   authHeaders?: Record<string, string>;
 }
 
-function getProviders(preferredProvider?: AIRequestOptions['preferredProvider']): AIProvider[] {
+// Gemini 免费版速率限制：5 RPM，12s 间隔保证不超限
+let lastGeminiCallTime = 0;
+const GEMINI_MIN_INTERVAL_MS = 13_000; // 13s to be safe
+
+async function rateLimitedFetch(
+  provider: AIProvider,
+  options: AIRequestOptions,
+): Promise<Response> {
+  const isGemini = provider.name === 'Gemini';
+
+  if (isGemini) {
+    const now = Date.now();
+    const elapsed = now - lastGeminiCallTime;
+    if (elapsed < GEMINI_MIN_INTERVAL_MS) {
+      const waitMs = GEMINI_MIN_INTERVAL_MS - elapsed;
+      console.log(`[AI Client] Gemini rate limit: waiting ${(waitMs / 1000).toFixed(0)}s...`);
+      await new Promise(resolve => setTimeout(resolve, waitMs));
+    }
+    lastGeminiCallTime = Date.now();
+  }
+
+  const requestHeaders: Record<string, string> = {
+    ...provider.headers,
+  };
+  if (provider.apiKey) {
+    requestHeaders['Authorization'] = `Bearer ${provider.apiKey}`;
+  }
+  if (provider.authHeaders) {
+    Object.assign(requestHeaders, provider.authHeaders);
+  }
+
+  const MAX_RETRIES = 3;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    const response = await fetch(provider.baseUrl, {
+      method: 'POST',
+      headers: requestHeaders,
+      body: JSON.stringify({
+        model: options.model || provider.model,
+        messages: options.messages,
+        stream: options.stream ?? true,
+      }),
+    });
+
+    if (response.ok) return response;
+
+    // 429 限流：等待后重试而非直接切换 provider
+    if (response.status === 429 && attempt < MAX_RETRIES) {
+      const waitSeconds = (attempt + 1) * 15;
+      console.warn(`[AI Client] ${provider.name} 429 rate limited, retrying in ${waitSeconds}s (attempt ${attempt + 1}/${MAX_RETRIES})...`);
+      await new Promise(resolve => setTimeout(resolve, waitSeconds * 1000));
+      continue;
+    }
+
+    // 非 429 或重试次数用完：抛出错误切换下一个 provider
+    const errorBody = await response.text();
+    throw new Error(`${provider.name} API error: ${response.status} - ${errorBody}`);
+  }
+
+  throw new Error(`${provider.name} exhausted retries after 429`);
+}
+
+function normalizeChatCompletionsUrl(baseUrl: string): string {
+  const trimmed = baseUrl.trim().replace(/\/$/, '');
+  if (trimmed.endsWith('/chat/completions')) return trimmed;
+  if (trimmed.endsWith('/v1')) return `${trimmed}/chat/completions`;
+  return trimmed;
+}
+
+function getProviders(
+  preferredProvider?: AIRequestOptions['preferredProvider'],
+  customModel?: CustomAIModelConfig,
+): AIProvider[] {
   const providers: AIProvider[] = [];
 
-  // 优先使用 Cloudsway
+  if (customModel?.baseUrl && customModel.apiKey && customModel.model) {
+    providers.push({
+      name: customModel.name || 'Custom',
+      baseUrl: normalizeChatCompletionsUrl(customModel.baseUrl),
+      apiKey: customModel.apiKey,
+      model: customModel.model,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  }
+
+  // 最优先使用 Gemini
+  if (process.env.GEMINI_API_KEY) {
+    providers.push({
+      name: 'Gemini',
+      baseUrl: (process.env.GEMINI_API_BASE || 'https://generativelanguage.googleapis.com/v1beta/openai/').replace(/\/$/, '') + '/chat/completions',
+      apiKey: process.env.GEMINI_API_KEY,
+      model: process.env.GEMINI_CHAT_MODEL || 'gemini-3-flash-preview',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  }
+
+  // 其次使用 Cloudsway
   if (process.env.CLOUDSWAY_API_KEY) {
     providers.push({
       name: 'Cloudsway',
@@ -83,7 +187,7 @@ export async function createAICompletion(options: AIRequestOptions): Promise<{
   response: Response;
   provider: string;
 }> {
-  const providers = getProviders(options.preferredProvider);
+  const providers = getProviders(options.preferredProvider, options.customModel);
 
   if (providers.length === 0) {
     throw new Error('No AI API key configured');
@@ -94,36 +198,9 @@ export async function createAICompletion(options: AIRequestOptions): Promise<{
   for (const provider of providers) {
     try {
       console.log(`[AI Client] Trying ${provider.name}...`);
-
-      const requestHeaders: Record<string, string> = {
-        ...provider.headers,
-      };
-      if (provider.apiKey) {
-        requestHeaders['Authorization'] = `Bearer ${provider.apiKey}`;
-      }
-      if (provider.authHeaders) {
-        Object.assign(requestHeaders, provider.authHeaders);
-      }
-
-      const response = await fetch(provider.baseUrl, {
-        method: 'POST',
-        headers: requestHeaders,
-        body: JSON.stringify({
-          model: options.model || provider.model,
-          messages: options.messages,
-          stream: options.stream ?? true,
-        }),
-      });
-
-      if (response.ok) {
-        console.log(`[AI Client] ${provider.name} succeeded`);
-        return { response, provider: provider.name };
-      }
-
-      // 如果响应不成功，记录错误并尝试下一个提供商
-      const errorBody = await response.text();
-      console.error(`[AI Client] ${provider.name} failed with status ${response.status}:`, errorBody);
-      lastError = new Error(`${provider.name} API error: ${response.status}`);
+      const response = await rateLimitedFetch(provider, options);
+      console.log(`[AI Client] ${provider.name} succeeded`);
+      return { response, provider: provider.name };
     } catch (error) {
       console.error(`[AI Client] ${provider.name} request failed:`, error);
       lastError = error instanceof Error ? error : new Error(String(error));

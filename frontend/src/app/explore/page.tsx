@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
 import cardsData from '@/data/cards.json';
+import autoCardsData from '@/data/cards.auto.json';
 import InsightCard, { CardData } from '@/components/Cards/InsightCard';
 import { trackCardClick } from '@/lib/tracking';
 
@@ -37,7 +38,7 @@ export default function ExplorePage() {
     }, []);
 
 
-    const combinedCards = useMemo(() => [...cmsCards, ...cardsData] as CardData[], [cmsCards]);
+    const combinedCards = useMemo(() => [...cmsCards, ...autoCardsData, ...cardsData] as CardData[], [cmsCards]);
     const categories = useMemo(() => {
         const unique = new Set(combinedCards.map(card => card.category).filter(Boolean));
         return ['全部', ...Array.from(unique)];
@@ -94,10 +95,10 @@ export default function ExplorePage() {
 
             <footer className="mt-12 pt-8 border-t border-gray-200 text-center text-sm text-gray-500 space-y-3">
                 <p>
-                    📚 这里的内容来自互联网收集。如果你有好的产品文章或想法，欢迎点击右上方反馈投稿给 vivi 💌
+                    📚 这里的内容来自互联网收集。如果你有好的产品文章或想法，欢迎点击右上方反馈投稿给ethan💌
                 </p>
                 <p>
-                    ✨ 每一篇都是 vivi 亲自挑选的产品思维精华，会不定期更新，欢迎常来看看！
+                    ✨ 每一篇都是ethan亲自挑选的产品思维精华，会不定期更新，欢迎常来看看！
                 </p>
             </footer>
 
@@ -137,9 +138,9 @@ export default function ExplorePage() {
 
                         {activeCard.tags?.length ? (
                             <div className="flex flex-wrap gap-1.5 mt-6">
-                                {activeCard.tags.map(tag => (
+                                {activeCard.tags.map((tag, index) => (
                                     <span
-                                        key={tag}
+                                        key={`${activeCard.id}-${tag}-${index}`}
                                         className="text-xs text-gray-600 bg-gray-100/70 px-2 py-0.5 rounded-full border border-gray-200/60 whitespace-nowrap"
                                     >
                                         #{tag}

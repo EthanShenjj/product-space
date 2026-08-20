@@ -1,8 +1,9 @@
 import os
 import glob
+import time
 from langchain_community.document_loaders import TextLoader, DirectoryLoader, PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from db import get_vector_store
+from db import get_vector_store, GEMINI_API_KEY
 
 # 默认知识库目录（优先级最高，包含精华内容）
 KNOWLEDGE_DIR = os.path.join(os.path.dirname(__file__), "knowledge")
@@ -146,7 +147,22 @@ def ingest_knowledge(mode: str = "full"):
     # 5. 索引到向量数据库
     print("\n🔄 正在索引到 ChromaDB...")
     vector_store = get_vector_store()
-    vector_store.add_documents(docs)
+
+    # Gemini 免费版限制：每分钟 100 条文本，需分批延迟处理
+    if GEMINI_API_KEY:
+        BATCH_SIZE = 90
+        total_batches = (len(docs) + BATCH_SIZE - 1) // BATCH_SIZE
+        for i in range(0, len(docs), BATCH_SIZE):
+            batch = docs[i : i + BATCH_SIZE]
+            batch_num = i // BATCH_SIZE + 1
+            print(f"  📝 批次 {batch_num}/{total_batches}: {len(batch)} 个文本块...")
+            vector_store.add_documents(batch)
+            if i + BATCH_SIZE < len(docs):
+                print(f"  ⏳ 等待 65s (Gemini 免费版速率限制)...")
+                time.sleep(65)
+    else:
+        vector_store.add_documents(docs)
+
     print("✅ 知识库导入完成！")
 
     # 6. 显示统计信息

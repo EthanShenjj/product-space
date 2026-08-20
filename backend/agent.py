@@ -1,7 +1,10 @@
 import os
+import time
+import functools
 from typing import List, Dict
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.language_models import BaseChatModel
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langgraph.graph import StateGraph, END
 from db import retrieve_knowledge
@@ -9,13 +12,107 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# 支持 OpenRouter 或 OpenAI
+# 支持 Gemini / OpenRouter / OpenAI
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_API_BASE = os.getenv("GEMINI_API_BASE")
+GEMINI_CHAT_MODEL = os.getenv("GEMINI_CHAT_MODEL", "gemini-2.5-flash")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
+
+class RateLimitedLLM:
+    """Wrap an LLM with rate-limit retry for Gemini free tier (5 RPM for chat).
+
+    Delegates attribute access to the underlying LLM so that methods like
+    `with_structured_output()` still work transparently.
+    """
+
+    def __init__(self, llm: BaseChatModel, max_retries: int = 5, base_delay: float = 12.0):
+        self._llm = llm
+        self._max_retries = max_retries
+        self._base_delay = base_delay
+
+    def invoke(self, *args, **kwargs):
+        for attempt in range(self._max_retries):
+            try:
+                return self._llm.invoke(*args, **kwargs)
+            except Exception as e:
+                error_msg = str(e)
+                if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
+                    wait_time = self._base_delay * (attempt + 1)
+                    print(f"  ⏳ LLM 速率限制，等待 {wait_time:.0f}s 后重试 ({attempt + 1}/{self._max_retries})...")
+                    time.sleep(wait_time)
+                    continue
+                raise
+        return self._llm.invoke(*args, **kwargs)
+
+    # Rate-limited: delegate
+    def stream(self, *args, **kwargs):
+        for attempt in range(self._max_retries):
+            try:
+                yield from self._llm.stream(*args, **kwargs)
+                return
+            except Exception as e:
+                error_msg = str(e)
+                if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
+                    wait_time = self._base_delay * (attempt + 1)
+                    print(f"  ⏳ LLM 速率限制（stream），等待 {wait_time:.0f}s 后重试 ({attempt + 1}/{self._max_retries})...")
+                    time.sleep(wait_time)
+                    continue
+                raise
+        yield from self._llm.stream(*args, **kwargs)
+
+    def __getattr__(self, name):
+        """Delegate everything else to the underlying LLM (e.g. with_structured_output)."""
+        attr = getattr(self._llm, name)
+        if callable(attr) and name == "with_structured_output":
+            # Wrap the result so invoke/ainvoke also get rate-limited
+            @functools.wraps(attr)
+            def wrapper(*args, **kwargs):
+                result = attr(*args, **kwargs)
+                return _RateLimitedRunnable(result, self._max_retries, self._base_delay)
+            return wrapper
+        return attr
+
+
+class _RateLimitedRunnable:
+    """Rate-limit wrapper for structured-output runnables returned by with_structured_output."""
+
+    def __init__(self, runnable, max_retries: int = 5, base_delay: float = 12.0):
+        self._runnable = runnable
+        self._max_retries = max_retries
+        self._base_delay = base_delay
+
+    def invoke(self, *args, **kwargs):
+        for attempt in range(self._max_retries):
+            try:
+                return self._runnable.invoke(*args, **kwargs)
+            except Exception as e:
+                error_msg = str(e)
+                if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
+                    wait_time = self._base_delay * (attempt + 1)
+                    print(f"  ⏳ LLM 速率限制，等待 {wait_time:.0f}s 后重试 ({attempt + 1}/{self._max_retries})...")
+                    time.sleep(wait_time)
+                    continue
+                raise
+        return self._runnable.invoke(*args, **kwargs)
+
+    def __getattr__(self, name):
+        return getattr(self._runnable, name)
+
+
 def get_llm():
-    """Returns the LLM, supporting both OpenRouter and OpenAI."""
-    if OPENROUTER_API_KEY:
+    """Returns the LLM, supporting Gemini, OpenRouter and OpenAI."""
+    if GEMINI_API_KEY:
+        # 使用 Google Gemini（OpenAI 兼容接口）
+        llm = ChatOpenAI(
+            model=GEMINI_CHAT_MODEL,
+            temperature=0.7,
+            openai_api_key=GEMINI_API_KEY,
+            openai_api_base=GEMINI_API_BASE,
+        )
+        return RateLimitedLLM(llm)
+    elif OPENROUTER_API_KEY:
         # 使用 OpenRouter - 可以选择不同的模型
         return ChatOpenAI(
             model="openai/gpt-4o",  # 或 "anthropic/claude-3.5-sonnet"
@@ -27,7 +124,7 @@ def get_llm():
         # 直接使用 OpenAI
         return ChatOpenAI(model="gpt-4o", temperature=0.7)
     else:
-        raise ValueError("请设置 OPENROUTER_API_KEY 或 OPENAI_API_KEY")
+        raise ValueError("请设置 GEMINI_API_KEY、OPENROUTER_API_KEY 或 OPENAI_API_KEY")
 
 # --- State Definition ---
 class AgentState(Dict):
@@ -143,11 +240,16 @@ def run_role(state: AgentState, role_key: str):
     structured_llm = llm.with_structured_output(method="json_mode")
     result = structured_llm.invoke(msg)
 
+    # Handle list results (Gemini sometimes wraps output in an array)
+    if isinstance(result, list):
+        result = result[0] if result else {}
     # Fallback if result is string
     if isinstance(result, str):
          import json
          try:
              result = json.loads(result)
+             if isinstance(result, list):
+                 result = result[0] if result else {}
          except:
              result = {"vote": "YELLOW", "comment": "系统解析反馈失败。"}
 
@@ -281,17 +383,14 @@ workflow.add_node("fan_out", fan_out_node)
 # 知识库检索完成后，进入 fan_out
 workflow.add_edge("knowledge", "fan_out")
 
-# Fan Out Edges - 6 个角色并行评审
+# 串行评审：每次只发一个 LLM 请求，避免触发 Gemini 免费版 5 RPM 限制
 workflow.add_edge("fan_out", "pm")
-workflow.add_edge("fan_out", "strategy")
-workflow.add_edge("fan_out", "growth")
-workflow.add_edge("fan_out", "tech")
-workflow.add_edge("fan_out", "user")
-workflow.add_edge("fan_out", "investor")
-
-# Fan In - 所有角色汇聚到 moderator
-for role in ["pm", "strategy", "growth", "tech", "user", "investor"]:
-    workflow.add_edge(role, "moderator")
+workflow.add_edge("pm", "strategy")
+workflow.add_edge("strategy", "growth")
+workflow.add_edge("growth", "tech")
+workflow.add_edge("tech", "user")
+workflow.add_edge("user", "investor")
+workflow.add_edge("investor", "moderator")
 
 workflow.add_edge("moderator", END)
 

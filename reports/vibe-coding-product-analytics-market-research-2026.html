@@ -1,0 +1,2186 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta
+      name="description"
+      content="Vibe Coding 与一人公司产品分析市场：基于 Reddit、X 与公开产品数据的用户洞察报告。"
+    />
+    <title>Vibe Coding × 产品分析｜用户洞察与市场机会报告</title>
+    <style>
+      :root {
+        --ink: #191917;
+        --muted: #686760;
+        --paper: #f4f0e8;
+        --card: #fffdf8;
+        --line: #d9d2c6;
+        --coral: #ff5b3a;
+        --lime: #dafa6a;
+        --blue: #6686ff;
+        --blue-soft: #e9edff;
+        --green: #16785d;
+        --amber: #b76a13;
+        --red: #b83c2f;
+        --shadow: 0 20px 60px rgba(33, 28, 20, 0.08);
+        --radius: 22px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(
+            circle at 10% 2%,
+            rgba(218, 250, 106, 0.38),
+            transparent 22rem
+          ),
+          radial-gradient(
+            circle at 95% 18%,
+            rgba(102, 134, 255, 0.18),
+            transparent 24rem
+          ),
+          var(--paper);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          "PingFang SC",
+          "Hiragino Sans GB",
+          "Microsoft YaHei",
+          sans-serif;
+        font-size: 16px;
+        line-height: 1.65;
+      }
+      a {
+        color: inherit;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
+      }
+      a:hover {
+        color: var(--coral);
+      }
+      button {
+        font: inherit;
+      }
+      .progress {
+        position: fixed;
+        z-index: 50;
+        inset: 0 auto auto 0;
+        height: 4px;
+        width: 0;
+        background: linear-gradient(90deg, var(--coral), var(--blue));
+      }
+      .page {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 28px 34px 80px;
+      }
+      .hero {
+        position: relative;
+        overflow: hidden;
+        min-height: 640px;
+        padding: 34px 44px 42px;
+        border: 1px solid var(--ink);
+        border-radius: 30px;
+        background: var(--card);
+        box-shadow: var(--shadow);
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+        gap: 40px;
+      }
+      .hero::after {
+        content: "";
+        position: absolute;
+        width: 330px;
+        height: 330px;
+        right: -115px;
+        top: -110px;
+        border-radius: 50%;
+        background: var(--coral);
+        opacity: 0.92;
+      }
+      .eyebrow,
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        width: fit-content;
+        border: 1px solid var(--ink);
+        border-radius: 999px;
+        padding: 7px 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 760;
+        font-size: 12px;
+        background: var(--lime);
+      }
+      h1,
+      h2,
+      h3,
+      .display {
+        letter-spacing: -0.045em;
+        line-height: 1.04;
+        margin: 0;
+      }
+      h1 {
+        font-size: clamp(48px, 7.2vw, 106px);
+        max-width: 980px;
+        margin-top: 34px;
+      }
+      h1 .accent {
+        color: var(--coral);
+      }
+      .deck {
+        max-width: 800px;
+        margin: 30px 0 0;
+        font-size: clamp(19px, 2vw, 27px);
+        line-height: 1.35;
+      }
+      .hero-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        margin-top: 32px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .hero-meta span {
+        padding: 7px 10px;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        background: #fff;
+      }
+      .verdict-card {
+        position: relative;
+        z-index: 2;
+        align-self: end;
+        background: var(--ink);
+        color: #fff;
+        border-radius: 24px;
+        padding: 28px;
+        transform: rotate(1deg);
+      }
+      .verdict-card .kicker {
+        color: var(--lime);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 12px;
+        font-weight: 800;
+      }
+      .score {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        margin: 16px 0 6px;
+      }
+      .score strong {
+        font-size: 76px;
+        letter-spacing: -0.07em;
+        line-height: 1;
+      }
+      .score span {
+        color: #bdbdb7;
+      }
+      .verdict-card p {
+        color: #e3e1da;
+        margin-bottom: 0;
+      }
+      .stamp {
+        position: absolute;
+        right: 24px;
+        top: 180px;
+        z-index: 3;
+        transform: rotate(8deg);
+        width: 128px;
+        height: 128px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        border: 2px solid var(--ink);
+        background: var(--lime);
+        font-size: 14px;
+        font-weight: 850;
+        line-height: 1.15;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 230px minmax(0, 1fr);
+        gap: 38px;
+        margin-top: 42px;
+      }
+      .toc {
+        position: sticky;
+        top: 24px;
+        align-self: start;
+        padding: 20px 0;
+      }
+      .toc-title {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        font-weight: 850;
+        color: var(--muted);
+        margin-bottom: 14px;
+      }
+      .toc a {
+        display: block;
+        padding: 8px 12px;
+        border-left: 2px solid var(--line);
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 14px;
+      }
+      .toc a.active {
+        color: var(--ink);
+        border-left-color: var(--coral);
+        font-weight: 750;
+        background: rgba(255, 255, 255, 0.42);
+      }
+      .toc .download {
+        margin-top: 18px;
+        border: 1px solid var(--ink);
+        border-radius: 12px;
+        background: var(--ink);
+        color: white;
+        text-align: center;
+      }
+      .toc .download:hover {
+        color: var(--lime);
+      }
+      main {
+        min-width: 0;
+      }
+      section {
+        scroll-margin-top: 26px;
+        margin-bottom: 86px;
+      }
+      .section-no {
+        color: var(--coral);
+        font-size: 13px;
+        font-weight: 850;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      h2 {
+        font-size: clamp(38px, 5vw, 68px);
+        margin-top: 12px;
+        max-width: 960px;
+      }
+      h3 {
+        font-size: 25px;
+      }
+      .section-lead {
+        font-size: 20px;
+        max-width: 850px;
+        color: #3e3d38;
+        margin: 22px 0 32px;
+      }
+      .note {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .grid {
+        display: grid;
+        gap: 18px;
+      }
+      .grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .grid-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 26px;
+      }
+      .card.dark {
+        background: var(--ink);
+        color: #fff;
+        border-color: var(--ink);
+      }
+      .card.blue {
+        background: var(--blue-soft);
+        border-color: #bdc8ff;
+      }
+      .card.lime {
+        background: var(--lime);
+        border-color: #bad633;
+      }
+      .card.coral {
+        background: #ffdfd8;
+        border-color: #ffab99;
+      }
+      .card p:last-child {
+        margin-bottom: 0;
+      }
+      .metric {
+        font-size: clamp(34px, 4vw, 58px);
+        font-weight: 850;
+        letter-spacing: -0.06em;
+        line-height: 1;
+        margin: 18px 0 12px;
+      }
+      .metric-label {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .dark .metric-label {
+        color: #bbb8af;
+      }
+      .tag {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        background: #ece7de;
+      }
+      .dark .tag {
+        background: #343430;
+        color: var(--lime);
+      }
+      .headline-card {
+        border: 2px solid var(--ink);
+        box-shadow: 8px 8px 0 var(--ink);
+      }
+      .headline-card h3 {
+        font-size: clamp(28px, 3vw, 44px);
+        margin: 14px 0;
+      }
+      .callout {
+        padding: 22px 26px;
+        border-left: 5px solid var(--coral);
+        background: rgba(255, 255, 255, 0.52);
+        margin: 22px 0;
+        font-size: 19px;
+      }
+      .callout strong {
+        color: var(--red);
+      }
+
+      .signal-list {
+        display: grid;
+        gap: 12px;
+      }
+      .signal {
+        display: grid;
+        grid-template-columns: 42px minmax(180px, 0.8fr) minmax(
+            260px,
+            1.5fr
+          ) 90px;
+        gap: 16px;
+        align-items: center;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px;
+      }
+      .rank {
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: var(--ink);
+        color: white;
+        font-weight: 850;
+      }
+      .signal-title {
+        font-weight: 800;
+      }
+      .bar {
+        height: 9px;
+        border-radius: 99px;
+        background: #e5e0d7;
+        overflow: hidden;
+        margin-top: 8px;
+      }
+      .bar > i {
+        display: block;
+        height: 100%;
+        background: linear-gradient(90deg, var(--coral), #ff9e52);
+        border-radius: inherit;
+      }
+      .signal-score {
+        font-weight: 850;
+        font-size: 25px;
+        text-align: right;
+      }
+      .signal-score small {
+        display: block;
+        color: var(--muted);
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .quote {
+        position: relative;
+        padding-top: 54px;
+      }
+      .quote::before {
+        content: "“";
+        position: absolute;
+        top: 8px;
+        left: 22px;
+        font-family: Georgia, serif;
+        font-size: 76px;
+        line-height: 1;
+        color: var(--coral);
+      }
+      .quote q {
+        quotes: none;
+        font-size: 18px;
+      }
+      .quote footer {
+        margin-top: 18px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .journey {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0;
+        border: 1px solid var(--ink);
+        border-radius: var(--radius);
+        overflow: hidden;
+        background: var(--card);
+      }
+      .stage {
+        padding: 24px;
+        min-height: 330px;
+        border-right: 1px solid var(--ink);
+      }
+      .stage:last-child {
+        border-right: 0;
+      }
+      .stage:nth-child(2) {
+        background: #fff5ef;
+      }
+      .stage:nth-child(3) {
+        background: var(--blue-soft);
+      }
+      .stage:nth-child(4) {
+        background: #eff8d0;
+      }
+      .stage-no {
+        font-size: 12px;
+        font-weight: 850;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .stage h3 {
+        margin: 12px 0 18px;
+      }
+      .stage ul,
+      .clean-list {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      .market-map {
+        display: grid;
+        grid-template-columns: 150px repeat(4, 1fr);
+        border: 1px solid var(--ink);
+        border-radius: 20px;
+        overflow: hidden;
+        background: var(--card);
+      }
+      .market-map > div {
+        padding: 15px 16px;
+        border-right: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        min-height: 70px;
+      }
+      .market-map > div:nth-child(5n) {
+        border-right: 0;
+      }
+      .market-map > div:nth-last-child(-n + 5) {
+        border-bottom: 0;
+      }
+      .map-head {
+        background: var(--ink);
+        color: white;
+        font-size: 12px;
+        text-transform: uppercase;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+      }
+      .map-row {
+        font-weight: 800;
+        background: #eee9df;
+      }
+      .brand {
+        font-weight: 780;
+      }
+      .brand small {
+        display: block;
+        font-weight: 500;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      .winner {
+        background: var(--lime);
+      }
+
+      .scorecard {
+        display: grid;
+        grid-template-columns: 180px 1fr 1fr;
+        border: 1px solid var(--ink);
+        border-radius: 20px;
+        overflow: hidden;
+        background: var(--card);
+      }
+      .scorecard > div {
+        padding: 16px 18px;
+        border-bottom: 1px solid var(--line);
+      }
+      .scorecard > div:nth-last-child(-n + 3) {
+        border-bottom: 0;
+      }
+      .scorecard .head {
+        background: var(--ink);
+        color: #fff;
+        font-weight: 800;
+      }
+      .scorecard .label {
+        font-weight: 760;
+      }
+      .yes {
+        color: var(--green);
+        font-weight: 800;
+      }
+      .warn {
+        color: var(--amber);
+        font-weight: 800;
+      }
+      .no {
+        color: var(--red);
+        font-weight: 800;
+      }
+
+      .concept {
+        position: relative;
+        overflow: hidden;
+        background: var(--ink);
+        color: #fff;
+        border-radius: 28px;
+        padding: 36px;
+      }
+      .concept::after {
+        content: "ACTION";
+        position: absolute;
+        right: -22px;
+        bottom: -30px;
+        font-weight: 900;
+        font-size: 140px;
+        line-height: 1;
+        color: rgba(255, 255, 255, 0.045);
+        letter-spacing: -0.08em;
+      }
+      .concept h3 {
+        font-size: clamp(36px, 5vw, 64px);
+        max-width: 850px;
+        margin: 16px 0;
+      }
+      .concept .sub {
+        color: #d0cec7;
+        max-width: 760px;
+        font-size: 19px;
+      }
+      .brief {
+        position: relative;
+        z-index: 2;
+        margin-top: 28px;
+        background: #f8f5ed;
+        color: var(--ink);
+        border-radius: 20px;
+        padding: 24px;
+        max-width: 880px;
+      }
+      .brief-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--line);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 800;
+      }
+      .brief h4 {
+        font-size: 24px;
+        line-height: 1.2;
+        margin: 18px 0 10px;
+      }
+      .evidence-chip {
+        display: inline-block;
+        margin: 5px 6px 0 0;
+        padding: 5px 8px;
+        background: var(--blue-soft);
+        border-radius: 7px;
+        font-size: 12px;
+      }
+
+      .mvp-list {
+        counter-reset: item;
+        display: grid;
+        gap: 12px;
+      }
+      .mvp-row {
+        counter-increment: item;
+        display: grid;
+        grid-template-columns: 50px 1fr auto;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 18px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+      }
+      .mvp-row::before {
+        content: counter(item, decimal-leading-zero);
+        font-weight: 900;
+        color: var(--coral);
+      }
+      .mvp-row strong {
+        display: block;
+      }
+      .mvp-row span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .priority {
+        color: var(--ink) !important;
+        background: var(--lime);
+        padding: 5px 8px;
+        border-radius: 999px;
+        font-weight: 800;
+        font-size: 11px !important;
+      }
+
+      .source-group {
+        margin-top: 18px;
+      }
+      details {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        margin-bottom: 10px;
+      }
+      summary {
+        cursor: pointer;
+        padding: 15px 18px;
+        font-weight: 780;
+      }
+      details > div {
+        padding: 0 18px 18px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .source-list {
+        margin: 0;
+        padding-left: 20px;
+      }
+      .source-list li {
+        margin: 8px 0;
+      }
+      sup a {
+        text-decoration: none;
+        color: var(--coral);
+        font-weight: 850;
+      }
+      .method {
+        font-size: 14px;
+      }
+      .method strong {
+        color: var(--ink);
+      }
+      .footer {
+        margin-top: 80px;
+        padding-top: 24px;
+        border-top: 1px solid var(--ink);
+        display: flex;
+        justify-content: space-between;
+        gap: 30px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .print-btn {
+        border: 1px solid var(--ink);
+        background: transparent;
+        padding: 9px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+      }
+      .print-btn:hover {
+        background: var(--ink);
+        color: white;
+      }
+
+      @media (max-width: 1080px) {
+        .hero {
+          grid-template-columns: 1fr;
+          min-height: auto;
+        }
+        .verdict-card {
+          max-width: 560px;
+        }
+        .stamp {
+          top: auto;
+          bottom: 210px;
+        }
+        .layout {
+          grid-template-columns: 1fr;
+        }
+        .toc {
+          position: static;
+          display: flex;
+          overflow-x: auto;
+          gap: 4px;
+          padding: 0 0 10px;
+        }
+        .toc-title,
+        .toc .download {
+          display: none;
+        }
+        .toc a {
+          white-space: nowrap;
+          border-left: 0;
+          border-bottom: 2px solid var(--line);
+        }
+        .toc a.active {
+          border-bottom-color: var(--coral);
+        }
+        .grid-4 {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .journey {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .stage {
+          border-bottom: 1px solid var(--ink);
+        }
+        .stage:nth-child(2) {
+          border-right: 0;
+        }
+        .stage:nth-child(3),
+        .stage:nth-child(4) {
+          border-bottom: 0;
+        }
+        .market-map {
+          grid-template-columns: 130px repeat(2, 1fr);
+        }
+        .market-map > div {
+          border-bottom: 1px solid var(--line) !important;
+        }
+        .map-head:nth-child(4),
+        .map-head:nth-child(5),
+        .market-map .hide-tablet {
+          display: none;
+        }
+        .market-map > div:nth-child(3n) {
+          border-right: 0;
+        }
+      }
+      @media (max-width: 720px) {
+        .page {
+          padding: 14px 14px 60px;
+        }
+        .hero {
+          padding: 25px 22px 28px;
+          border-radius: 22px;
+        }
+        .hero::after {
+          width: 200px;
+          height: 200px;
+          right: -100px;
+          top: -80px;
+        }
+        h1 {
+          font-size: 49px;
+        }
+        .stamp {
+          display: none;
+        }
+        .grid-2,
+        .grid-3,
+        .grid-4 {
+          grid-template-columns: 1fr;
+        }
+        .signal {
+          grid-template-columns: 42px 1fr 56px;
+        }
+        .signal > div:nth-child(3) {
+          grid-column: 2 / 4;
+        }
+        .signal-score {
+          grid-row: 1;
+          grid-column: 3;
+        }
+        .journey {
+          grid-template-columns: 1fr;
+        }
+        .stage {
+          border-right: 0;
+          border-bottom: 1px solid var(--ink) !important;
+        }
+        .stage:last-child {
+          border-bottom: 0 !important;
+        }
+        .market-map {
+          display: block;
+        }
+        .market-map > div {
+          border-right: 0;
+        }
+        .map-head {
+          display: none !important;
+        }
+        .map-row {
+          border-top: 2px solid var(--ink);
+        }
+        .scorecard {
+          grid-template-columns: 1fr;
+        }
+        .scorecard > div {
+          border-bottom: 1px solid var(--line) !important;
+        }
+        .scorecard > div:last-child {
+          border-bottom: 0 !important;
+        }
+        .scorecard .head {
+          display: none;
+        }
+        .mvp-row {
+          grid-template-columns: 42px 1fr;
+        }
+        .priority {
+          grid-column: 2;
+          width: fit-content;
+        }
+        .footer {
+          flex-direction: column;
+        }
+      }
+      @media print {
+        body {
+          background: white;
+        }
+        .page {
+          max-width: none;
+          padding: 0;
+        }
+        .hero {
+          box-shadow: none;
+          min-height: auto;
+          break-after: page;
+        }
+        .toc,
+        .progress,
+        .print-btn {
+          display: none !important;
+        }
+        .layout {
+          display: block;
+        }
+        section {
+          break-inside: avoid;
+          margin-bottom: 45px;
+        }
+        a {
+          text-decoration: none;
+        }
+        .card,
+        .concept,
+        .journey,
+        .market-map {
+          break-inside: avoid;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="progress" aria-hidden="true"></div>
+    <div class="page">
+      <header class="hero">
+        <div>
+          <span class="eyebrow">Research memo · 2026</span>
+          <h1>
+            人人都能造产品，<br /><span class="accent">谁来告诉他下一步？</span>
+          </h1>
+          <p class="deck">
+            Vibe Coding
+            与一人公司正在扩大“产品拥有者”的人群，但他们真正购买的不是更多数据，而是更快、更可信的增长判断。
+          </p>
+          <div class="hero-meta">
+            <span>Reddit / X 社媒洞察</span>
+            <span>独立开发者 × Micro SaaS</span>
+            <span>桌面研究：2026-08-20</span>
+            <span>方向性样本，不代表总体统计</span>
+          </div>
+        </div>
+        <aside class="verdict-card" aria-label="市场结论">
+          <div class="kicker">Market verdict</div>
+          <div class="score"><strong>7.4</strong><span>/ 10</span></div>
+          <h3>需求真，赛道挤，切口决定成败。</h3>
+          <p>
+            “再做一个轻量分析面板”只有中等机会；“把现有数据变成一人公司的下一步行动”是更强的产品楔子。
+          </p>
+        </aside>
+        <div class="stamp">核心判断<br />ACTION<br />&gt; DATA</div>
+      </header>
+
+      <div class="layout">
+        <nav class="toc" aria-label="报告目录">
+          <div class="toc-title">Contents</div>
+          <a href="#summary">01 结论先行</a>
+          <a href="#signals">02 社媒信号</a>
+          <a href="#journey">03 需求分层</a>
+          <a href="#jobs">04 核心诉求</a>
+          <a href="#market">05 市场判断</a>
+          <a href="#competition">06 竞争格局</a>
+          <a href="#opportunity">07 产品机会</a>
+          <a href="#validation">08 验证计划</a>
+          <a href="#sources">09 方法与来源</a>
+          <a
+            class="download"
+            href="#"
+            onclick="
+              window.print();
+              return false;
+            "
+            >打印 / 导出 PDF</a
+          >
+        </nav>
+
+        <main>
+          <section id="summary">
+            <div class="section-no">01 · Executive summary</div>
+            <h2>这不是一个“有没有需求”的问题，而是“需求何时变得足够痛”。</h2>
+            <p class="section-lead">
+              独立开发者从发布第一天就会看访问量，但只有当用户、收入与迭代复杂度跨过阈值后，分析才从“好奇心”升级为“必须解决的经营问题”。
+            </p>
+
+            <div class="grid grid-4">
+              <article class="card lime">
+                <span class="tag">Tailwind</span>
+                <div class="metric">63%</div>
+                <div class="metric-label">
+                  Stripe Atlas 2026 Q2 C Corp 中的单人创始人占比<sup
+                    ><a href="#s1">1</a></sup
+                  >
+                </div>
+              </article>
+              <article class="card">
+                <span class="tag">Speed</span>
+                <div class="metric">20%</div>
+                <div class="metric-label">
+                  2025 Atlas 创业公司在成立后 30 天内获得首个付费客户<sup
+                    ><a href="#s2">2</a></sup
+                  >
+                </div>
+              </article>
+              <article class="card blue">
+                <span class="tag">Proof</span>
+                <div class="metric">$20K</div>
+                <div class="metric-label">
+                  DataFast 以“收入归因”为切口达到的月经常性收入<sup
+                    ><a href="#s3">3</a></sup
+                  >
+                </div>
+              </article>
+              <article class="card dark">
+                <span class="tag">Reality</span>
+                <div class="metric">≈7%</div>
+                <div class="metric-label">
+                  DataFast 在约 1,000 名付费客户阶段披露的月流失率<sup
+                    ><a href="#s4">4</a></sup
+                  >
+                </div>
+              </article>
+            </div>
+
+            <div class="grid grid-2" style="margin-top: 22px">
+              <article class="card headline-card">
+                <span class="tag">需求结论</span>
+                <h3>他们不要“懂数据”，他们要“别浪费下一周”。</h3>
+                <p>
+                  最强诉求依次是：找到增长瓶颈、解释用户为什么卡住、识别真正带来付费/留存的渠道、确认一次改版是否有效。DAU、留存、LTV
+                  是语言，不是最终任务。
+                </p>
+              </article>
+              <article class="card headline-card coral">
+                <span class="tag">市场结论</span>
+                <h3>采集层趋于免费，决策层仍有溢价。</h3>
+                <p>
+                  PostHog、Amplitude、Mixpanel
+                  已提供百万级免费事件；开源与低价工具密集。新进入者不应重建埋点仓库，而应站在现有数据之上，交付“异常
+                  → 证据 → 建议 → 行动”。
+                </p>
+              </article>
+            </div>
+
+            <div class="callout">
+              <strong>一句话机会：</strong>为已有 50–5,000
+              MAU、开始收费、每周仍在快速迭代的 solo founder，做一个连接 PostHog
+              / Stripe / Supabase 的“AI 增长值班经理”。
+            </div>
+          </section>
+
+          <section id="signals">
+            <div class="section-no">02 · Social signals</div>
+            <h2>
+              社媒上反复出现的，不是“数据太少”，而是“无法从数据抵达决定”。
+            </h2>
+            <p class="section-lead">
+              以下分数是基于讨论频率、情绪强度、经营影响与付费证据的定性优先级，不是统计学比例。样本中混有产品推广贴，因此对“自述痛点”降权，对评论、复盘与可验证收入加权。
+            </p>
+
+            <div class="signal-list">
+              <div class="signal">
+                <div class="rank">1</div>
+                <div>
+                  <div class="signal-title">不知道下一步该做什么</div>
+                  <div class="bar"><i style="width: 94%"></i></div>
+                </div>
+                <div>
+                  数据面板告诉“发生了什么”，但创始人仍需在分析、代码和用户库之间手工拼接原因与动作。<sup
+                    ><a href="#r1">R1</a></sup
+                  >
+                </div>
+                <div class="signal-score">9.4<small>优先级</small></div>
+              </div>
+              <div class="signal">
+                <div class="rank">2</div>
+                <div>
+                  <div class="signal-title">流量与收入断裂</div>
+                  <div class="bar"><i style="width: 91%"></i></div>
+                </div>
+                <div>
+                  独立开发者最关心“哪个来源带来付费客户”，而非哪个来源带来最多点击；DataFast
+                  的增长验证了这个切口。<sup><a href="#s3">3</a></sup>
+                </div>
+                <div class="signal-score">9.1<small>优先级</small></div>
+              </div>
+              <div class="signal">
+                <div class="rank">3</div>
+                <div>
+                  <div class="signal-title">激活与首个价值时刻</div>
+                  <div class="bar"><i style="width: 87%"></i></div>
+                </div>
+                <div>
+                  “注册很多、之后不行动”是典型触发点；用户希望知道在哪一步流失，以及界面/文案哪里造成犹豫。<sup
+                    ><a href="#r2">R2</a></sup
+                  >
+                </div>
+                <div class="signal-score">8.7<small>优先级</small></div>
+              </div>
+              <div class="signal">
+                <div class="rank">4</div>
+                <div>
+                  <div class="signal-title">配置与理解成本</div>
+                  <div class="bar"><i style="width: 84%"></i></div>
+                </div>
+                <div>
+                  埋点要逐个添加、面板看起来压倒性；自然语言提问开始替代手工配置报表。<sup
+                    ><a href="#r3">R3</a></sup
+                  >
+                </div>
+                <div class="signal-score">8.4<small>优先级</small></div>
+              </div>
+              <div class="signal">
+                <div class="rank">5</div>
+                <div>
+                  <div class="signal-title">数据分散、上下文切换</div>
+                  <div class="bar"><i style="width: 80%"></i></div>
+                </div>
+                <div>
+                  Stripe、数据库、产品分析、错误与社媒数据分布在多处；“每天
+                  15–20 分钟看多个面板”是可见摩擦。<sup
+                    ><a href="#r4">R4</a></sup
+                  >
+                </div>
+                <div class="signal-score">8.0<small>优先级</small></div>
+              </div>
+              <div class="signal">
+                <div class="rank">6</div>
+                <div>
+                  <div class="signal-title">数据可信度与低样本噪声</div>
+                  <div class="bar"><i style="width: 74%"></i></div>
+                </div>
+                <div>
+                  事件定义不清、机器人流量、同指标口径不一；早期低流量让“精密分析”看起来像工作、实际是噪声。<sup
+                    ><a href="#r5">R5</a></sup
+                  >
+                </div>
+                <div class="signal-score">7.4<small>优先级</small></div>
+              </div>
+              <div class="signal">
+                <div class="rank">7</div>
+                <div>
+                  <div class="signal-title">隐私、价格与账单可预测</div>
+                  <div class="bar"><i style="width: 69%"></i></div>
+                </div>
+                <div>
+                  GA4 复杂、cookie 同意导致数据缺失；但“隐私 +
+                  简单”已高度同质化，更像准入条件而非独特卖点。<sup
+                    ><a href="#r6">R6</a></sup
+                  >
+                </div>
+                <div class="signal-score">6.9<small>优先级</small></div>
+              </div>
+            </div>
+
+            <h3 style="margin: 36px 0 16px">
+              原声切片：一句抱怨背后的真实任务
+            </h3>
+            <div class="grid grid-3">
+              <blockquote class="card quote">
+                <q>面板登录后看起来太压倒性，所以我现在直接问 Claude。</q>
+                <footer>
+                  Reddit · solo SaaS founder，已接 PostHog MCP<sup
+                    ><a href="#r3">R3</a></sup
+                  >
+                </footer>
+              </blockquote>
+              <blockquote class="card quote blue">
+                <q>最有用的版本不是总结分析，而是告诉我先修哪一个坏点。</q>
+                <footer>
+                  Reddit · 对 AI session 分析工具的反馈<sup
+                    ><a href="#r7">R7</a></sup
+                  >
+                </footer>
+              </blockquote>
+              <blockquote class="card quote lime">
+                <q>说真的，银行账户才是最清楚的 KPI。</q>
+                <footer>
+                  Reddit · 回答“每天在哪里看 SaaS 指标”<sup
+                    ><a href="#r3">R3</a></sup
+                  >
+                </footer>
+              </blockquote>
+            </div>
+
+            <div class="grid grid-2" style="margin-top: 18px">
+              <article class="card">
+                <span class="tag">Reddit tells us</span>
+                <h3 style="margin: 14px 0">“为什么”比“多少”更痛</h3>
+                <p>
+                  高频问题是“为什么有人注册后不行动”“为什么访问却不注册”“哪里开始流失”。回复普遍建议先看
+                  session
+                  replay，再直接访谈；这说明纯量化数据无法独立完成早期诊断。<sup
+                    ><a href="#r2">R2</a></sup
+                  ><sup><a href="#r8">R8</a></sup>
+                </p>
+              </article>
+              <article class="card dark">
+                <span class="tag">X tells us</span>
+                <h3 style="margin: 14px 0">指标也是独立创业者的“社会货币”</h3>
+                <p>
+                  MRR、付费用户、公开 dashboard 和增长截图在 X
+                  上承担信誉、分发与身份表达。Levels 公开经营指标，Marc Lou 的
+                  DataFast 用户主动分享截图带来自增长。<sup
+                    ><a href="#x1">X1</a></sup
+                  ><sup><a href="#s4">4</a></sup>
+                </p>
+              </article>
+            </div>
+          </section>
+
+          <section id="journey">
+            <div class="section-no">03 · Demand maturity</div>
+            <h2>需求不是按“懂不懂分析”分层，而是按产品生命阶段分层。</h2>
+            <p class="section-lead">
+              同一个人从发布到增长，雇佣的数据工具会变。过早卖留存与
+              LTV，会输给“直接问 10 个用户”；过晚只卖 PV/UV，会输给 Stripe
+              与产品分析平台。
+            </p>
+
+            <div class="journey">
+              <article class="stage">
+                <div class="stage-no">Stage 0 · 0–50 users</div>
+                <h3>我真的有人用吗？</h3>
+                <ul>
+                  <li>访客、注册、首个用户</li>
+                  <li>错误与无法完成的任务</li>
+                  <li>直接反馈、屏幕共享</li>
+                </ul>
+                <p class="note">
+                  <strong>替代品：</strong>Vercel
+                  Analytics、数据库、Clarity、邮件与私聊。
+                </p>
+                <p class="note">
+                  <strong>付费意愿：</strong>很低。免费与一次性工具占优。
+                </p>
+              </article>
+              <article class="stage">
+                <div class="stage-no">Stage 1 · 50–500 MAU</div>
+                <h3>人为什么没到达价值？</h3>
+                <ul>
+                  <li>激活率与 time-to-value</li>
+                  <li>关键漏斗与退出点</li>
+                  <li>session replay 解释原因</li>
+                </ul>
+                <p class="note">
+                  <strong>触发：</strong>“有注册，没使用”“改版后转化下降”。
+                </p>
+                <p class="note">
+                  <strong>付费意愿：</strong>低到中，前提是 10 分钟内看到问题。
+                </p>
+              </article>
+              <article class="stage">
+                <div class="stage-no">Stage 2 · $500–$50K MRR</div>
+                <h3>什么带来好客户？</h3>
+                <ul>
+                  <li>渠道 → 激活 → 付费</li>
+                  <li>留存、流失、扩张收入</li>
+                  <li>按来源/画像看 LTV</li>
+                </ul>
+                <p class="note">
+                  <strong>触发：</strong>开始买量、多个渠道、订阅增长。
+                </p>
+                <p class="note">
+                  <strong>付费意愿：</strong>中到高，价值可直接用收入证明。
+                </p>
+              </article>
+              <article class="stage">
+                <div class="stage-no">Stage 3 · 多产品/小团队</div>
+                <h3>今天最该处理哪件事？</h3>
+                <ul>
+                  <li>多源统一与口径可信</li>
+                  <li>异常、归因、自动摘要</li>
+                  <li>从洞察直接进入修复</li>
+                </ul>
+                <p class="note">
+                  <strong>触发：</strong>每天切换多个工具，信息开始超出脑容量。
+                </p>
+                <p class="note">
+                  <strong>付费意愿：</strong>高，按节省时间与避免损失付费。
+                </p>
+              </article>
+            </div>
+
+            <div class="callout">
+              <strong>最佳首发 ICP：</strong>不是“所有 vibe
+              coder”，而是已经发布、开始收费、每周迭代且没有数据分析师的技术型
+              solo founder。过早用户没数据，过晚用户已有成熟栈。
+            </div>
+          </section>
+
+          <section id="jobs">
+            <div class="section-no">04 · Jobs to be done</div>
+            <h2>他们雇佣分析产品，是为了完成六个经营任务。</h2>
+            <p class="section-lead">
+              把“DAU、留存、LTV”翻译成用户的真实问题，产品边界会清楚很多。
+            </p>
+
+            <div class="grid grid-3">
+              <article class="card">
+                <span class="tag">Detect</span>
+                <h3 style="margin: 14px 0">今天哪里不对？</h3>
+                <p>
+                  自动比较今日、7
+                  日均值与同周期，排除机器人和正常波动，只提醒值得处理的异常。
+                </p>
+                <p class="note">
+                  输出不是图，而是：激活率下降 18%，始于昨晚部署后。
+                </p>
+              </article>
+              <article class="card coral">
+                <span class="tag">Explain</span>
+                <h3 style="margin: 14px 0">用户为什么卡住？</h3>
+                <p>
+                  把漏斗、错误日志、session
+                  replay、设备与用户反馈连在一起，给出可复核证据。
+                </p>
+                <p class="note">数字定位“哪里”；回放与访谈解释“为什么”。</p>
+              </article>
+              <article class="card blue">
+                <span class="tag">Attribute</span>
+                <h3 style="margin: 14px 0">谁带来好客户？</h3>
+                <p>
+                  从 Reddit 帖子、X、SEO
+                  或广告一路连接到激活、订阅和留存，而非止步于最后点击。
+                </p>
+                <p class="note">最强价值锚点：收入 / 访客、渠道 LTV。</p>
+              </article>
+              <article class="card lime">
+                <span class="tag">Prioritize</span>
+                <h3 style="margin: 14px 0">下一步只做什么？</h3>
+                <p>
+                  按影响范围、置信度、修复成本排序，让一个人不必在 15
+                  个可能性里消耗注意力。
+                </p>
+                <p class="note">
+                  用户要“一个值得先修的问题”，不是 20 条 AI 洞察。
+                </p>
+              </article>
+              <article class="card">
+                <span class="tag">Verify</span>
+                <h3 style="margin: 14px 0">这次改动真的有效吗？</h3>
+                <p>
+                  自动记录发布前后指标、受影响人群和副作用，避免把短期波动误判为增长。
+                </p>
+                <p class="note">回答：转化提高了，还是流量结构变了？</p>
+              </article>
+              <article class="card dark">
+                <span class="tag">Trust</span>
+                <h3 style="margin: 14px 0">这组数据能信吗？</h3>
+                <p>
+                  解释事件定义、样本量、缺失与数据来源；任何 AI
+                  结论都附可回到原始证据的路径。
+                </p>
+                <p class="note">“可解释”比“更聪明”更能降低采用阻力。</p>
+              </article>
+            </div>
+
+            <h3 style="margin: 38px 0 16px">需求优先级：核心、支撑与伪需求</h3>
+            <div class="scorecard">
+              <div class="head">层级</div>
+              <div class="head">应该交付</div>
+              <div class="head">产品含义</div>
+              <div class="label yes">核心结果</div>
+              <div>激活、留存、收入归因、异常与下一步动作</div>
+              <div>围绕“决策”设计首页和通知</div>
+              <div class="label warn">必要支撑</div>
+              <div>自动埋点、事件语义、用户身份、隐私、数据质量</div>
+              <div>让用户少配置，但不要把它当主卖点</div>
+              <div class="label no">高风险伪需求</div>
+              <div>无限图表、全能 BI、实时看板大屏、数十种 vanity metrics</div>
+              <div>容易让产品再次变成用户逃离的复杂面板</div>
+            </div>
+          </section>
+
+          <section id="market">
+            <div class="section-no">05 · Market assessment</div>
+            <h2>市场在扩张，但“分析工具”这个词掩盖了两种完全不同的生意。</h2>
+            <p class="section-lead">
+              采集与画图是红海基础设施；解释、优先级与闭环执行是仍在形成的 AI
+              原生应用层。
+            </p>
+
+            <div class="grid grid-2">
+              <article class="card">
+                <span class="tag">Why now</span>
+                <h3 style="margin: 15px 0">供给端：产品数量大幅增加</h3>
+                <ul class="clean-list">
+                  <li>
+                    GitHub 2025 年有 36M+ 新开发者加入、每分钟创建 230+
+                    新仓库；其报告把 vibe coding 视为严肃趋势。<sup
+                      ><a href="#s5">5</a></sup
+                    >
+                  </li>
+                  <li>
+                    Stripe Atlas 2025 年 23,000 家新公司样本中，42% 自称 AI
+                    公司；首单速度与前六个月收入都在上升。<sup
+                      ><a href="#s2">2</a></sup
+                    >
+                  </li>
+                  <li>
+                    Solo founder
+                    占比创新高，但头部与中位数收入差距扩大，增长判断的价值随之上升。<sup
+                      ><a href="#s1">1</a></sup
+                    >
+                  </li>
+                </ul>
+              </article>
+              <article class="card blue">
+                <span class="tag">Economic proof</span>
+                <h3 style="margin: 15px 0">需求端：小团队确实会付费</h3>
+                <ul class="clean-list">
+                  <li>
+                    Plausible 公开披露 20,000+ 付费订阅者，证明“简单 +
+                    隐私”可成为可持续小团队生意。<sup><a href="#s6">6</a></sup>
+                  </li>
+                  <li>
+                    DataFast 从“Plausible + Stripe”起步，靠收入归因与 onboarding
+                    达到 $20K+ MRR。<sup><a href="#s3">3</a></sup>
+                  </li>
+                  <li>
+                    但 DataFast 约 7% churn 说明：低价 maker
+                    市场流动性高，必须持续交付经营价值。<sup
+                      ><a href="#s4">4</a></sup
+                    >
+                  </li>
+                </ul>
+              </article>
+            </div>
+
+            <div class="grid grid-3" style="margin-top: 18px">
+              <article class="card dark">
+                <span class="tag">General tracker</span>
+                <div class="metric">5.6</div>
+                <h3>通用轻量分析</h3>
+                <p class="metric-label">
+                  需求稳定，但差异化低、免费替代多、迁移成本高。
+                </p>
+              </article>
+              <article class="card lime">
+                <span class="tag">Decision layer</span>
+                <div class="metric">8.3</div>
+                <h3>AI 决策与行动层</h3>
+                <p class="metric-label">
+                  痛点强、可复用现有采集、与 coding agent 工作流天然相连。
+                </p>
+              </article>
+              <article class="card coral">
+                <span class="tag">Vertical wedge</span>
+                <div class="metric">8.6</div>
+                <h3>垂直业务分析</h3>
+                <p class="metric-label">
+                  按订阅 SaaS、AI 应用、移动 App
+                  等预置指标与动作，最易建立语义优势。
+                </p>
+              </article>
+            </div>
+
+            <h3 style="margin: 38px 0 16px">
+              可服务市场：用情景估算，不制造虚假的 TAM 精度
+            </h3>
+            <div class="grid grid-3">
+              <article class="card">
+                <span class="tag">Beachhead</span>
+                <div class="metric">100K</div>
+                <p>
+                  全球范围内可触达、已收费且无分析团队的 solo / micro SaaS
+                  产品（假设场景）。
+                </p>
+                <p class="note">按 $12/月 → 年收入机会约 $14.4M。</p>
+              </article>
+              <article class="card">
+                <span class="tag">Expansion</span>
+                <div class="metric">500K</div>
+                <p>
+                  扩大到移动 App、AI
+                  工具、小型电商、创作者产品与多产品工作室（假设场景）。
+                </p>
+                <p class="note">按 $15/月 → 年收入机会约 $90M。</p>
+              </article>
+              <article class="card blue">
+                <span class="tag">Read correctly</span>
+                <div class="metric">≠ TAM</div>
+                <p>
+                  公开资料无法可靠统计“活跃、可变现、愿付费”的 vibe-coded
+                  产品数量。
+                </p>
+                <p class="note">
+                  因此更应该用 20 个设计伙伴与付费转化验证，而不是依赖宏观报告。
+                </p>
+              </article>
+            </div>
+          </section>
+
+          <section id="competition">
+            <div class="section-no">06 · Competitive landscape</div>
+            <h2>真正的竞争对手，第一名是“不看”，第二名是“自己拼”。</h2>
+            <p class="section-lead">
+              产品工具之外，数据库查询、Stripe 面板、Clarity、Excel、问 Claude
+              和直接找用户聊，都是用户已经在用的替代方案。
+            </p>
+
+            <div class="market-map" role="table" aria-label="竞争格局">
+              <div class="map-head">类别</div>
+              <div class="map-head">代表</div>
+              <div class="map-head">赢在哪里</div>
+              <div class="map-head hide-tablet">输在哪里</div>
+              <div class="map-head hide-tablet">新进入者策略</div>
+              <div class="map-row">免费 / 现状</div>
+              <div class="brand">
+                GA4、Vercel、Stripe、数据库<small>$0，顺手可见</small>
+              </div>
+              <div>无需新增预算</div>
+              <div class="hide-tablet">碎片化、难回答产品行为</div>
+              <div class="hide-tablet">证明“少花时间 / 少错过收入”</div>
+              <div class="map-row">全栈产品分析</div>
+              <div class="brand">
+                PostHog、Amplitude、Mixpanel<small>百万级免费事件</small>
+              </div>
+              <div>能力完整、生态强</div>
+              <div class="hide-tablet">配置与认知成本高</div>
+              <div class="hide-tablet">做其上层，不重做其底层</div>
+              <div class="map-row">轻量 / 隐私</div>
+              <div class="brand">
+                Plausible、Umami、Pirsch<small>简单、cookieless</small>
+              </div>
+              <div>部署快、界面清楚</div>
+              <div class="hide-tablet">多停留在流量与转化</div>
+              <div class="hide-tablet">避免只复制“更简单”</div>
+              <div class="map-row">开发者新锐</div>
+              <div class="brand">
+                OpenPanel<small>$2.5/月起，可自托管</small>
+              </div>
+              <div>低价、事件与漏斗兼顾</div>
+              <div class="hide-tablet">仍是分析工作台</div>
+              <div class="hide-tablet">用结论与动作区分</div>
+              <div class="map-row winner">收入优先</div>
+              <div class="brand winner">
+                DataFast<small>流量 → Stripe 收入</small>
+              </div>
+              <div class="winner">单一 aha 清晰，付费已验证</div>
+              <div class="hide-tablet winner">更偏获客归因，产品留存较弱</div>
+              <div class="hide-tablet winner">向激活、留存、修复闭环扩展</div>
+              <div class="map-row">一体化归因</div>
+              <div class="brand">
+                Usermaven<small>产品 + 营销 + 收入 + AI</small>
+              </div>
+              <div>多源、no-code、成熟功能</div>
+              <div class="hide-tablet">$84/月起，偏团队 / 营销</div>
+              <div class="hide-tablet">服务更小、更快的 solo 工作流</div>
+              <div class="map-row">DIY + AI</div>
+              <div class="brand">
+                PostHog MCP + Claude<small>自然语言问已有数据</small>
+              </div>
+              <div>灵活、便宜、贴近代码</div>
+              <div class="hide-tablet">事件与语义仍要自己维护</div>
+              <div class="hide-tablet">托管 metric layer 与验证机制</div>
+            </div>
+
+            <div class="grid grid-2" style="margin-top: 24px">
+              <article class="card">
+                <span class="tag">Pricing pressure</span>
+                <h3 style="margin: 14px 0">采集已被“免费层”商品化</h3>
+                <p>
+                  PostHog 免费 1M events/月，Amplitude 2M，Mixpanel
+                  1M；OpenPanel 5K events 仅
+                  $2.5/月。仅靠更便宜很难建立健康业务。<sup
+                    ><a href="#s7">7</a></sup
+                  ><sup><a href="#s8">8</a></sup
+                  ><sup><a href="#s9">9</a></sup
+                  ><sup><a href="#s10">10</a></sup>
+                </p>
+              </article>
+              <article class="card dark">
+                <span class="tag">Moat direction</span>
+                <h3 style="margin: 14px 0">壁垒来自业务语义与行动记忆</h3>
+                <p>
+                  埋点代码可复制；“这个业务的 aha
+                  是什么、什么变化值得提醒、哪种修复过去有效”会随使用累积，形成更难复制的上下文。
+                </p>
+              </article>
+            </div>
+          </section>
+
+          <section id="opportunity">
+            <div class="section-no">07 · Product opportunity</div>
+            <h2>不要做分析师的缩小版，要做创始人的增长值班经理。</h2>
+            <p class="section-lead">
+              建议从 connector-first、read-only
+              的决策层切入：不要求用户迁移数据，也不先建设昂贵采集基础设施。
+            </p>
+
+            <div class="concept">
+              <span class="eyebrow">Concept · Growth Brief</span>
+              <h3>每天只回答三件事：变了什么，为什么，先做什么。</h3>
+              <p class="sub">
+                连接 PostHog / Stripe / Supabase /
+                RevenueCat，理解代码中的事件语义，用可回溯证据生成一个经营优先级，而不是另一个
+                dashboard。
+              </p>
+              <div class="brief">
+                <div class="brief-top">
+                  <span>Wednesday · 08:10</span><span>Confidence 86%</span>
+                </div>
+                <h4>
+                  先修移动端 onboarding 第 3 步：它可能每周损失 11–17
+                  个激活用户。
+                </h4>
+                <p>
+                  过去 24 小时激活率下降 18%。下降集中在 iOS
+                  Safari，开始时间与昨晚 22:14 的发布一致；9 个 session 中有 6
+                  个在权限弹窗后退出。
+                </p>
+                <span class="evidence-chip">PostHog funnel</span
+                ><span class="evidence-chip">6 session replays</span
+                ><span class="evidence-chip">deploy #184</span
+                ><span class="evidence-chip">sample adequate</span>
+              </div>
+            </div>
+
+            <h3 style="margin: 38px 0 16px">MVP：先证明“建议值得照做”</h3>
+            <div class="mvp-list">
+              <div class="mvp-row">
+                <div>
+                  <strong>连接现有真相源</strong
+                  ><span
+                    >PostHog + Stripe + Supabase；只读授权，15
+                    分钟内完成。</span
+                  >
+                </div>
+                <span class="priority">P0</span>
+              </div>
+              <div class="mvp-row">
+                <div>
+                  <strong>按商业模式生成指标树</strong
+                  ><span
+                    >订阅 SaaS 默认：访问 → 注册 → aha → 付费 → D7/W4
+                    留存。</span
+                  >
+                </div>
+                <span class="priority">P0</span>
+              </div>
+              <div class="mvp-row">
+                <div>
+                  <strong>每日异常 + 每周增长简报</strong
+                  ><span
+                    >只报告超过阈值且有足够样本的变化，邮件 / Telegram / Slack
+                    送达。</span
+                  >
+                </div>
+                <span class="priority">P0</span>
+              </div>
+              <div class="mvp-row">
+                <div>
+                  <strong>每条结论附证据与口径</strong
+                  ><span>来源、事件定义、查询、样本量、置信度、相反证据。</span>
+                </div>
+                <span class="priority">P0</span>
+              </div>
+              <div class="mvp-row">
+                <div>
+                  <strong>一键进入行动</strong
+                  ><span
+                    >生成 issue、用户访谈名单或给 coding agent
+                    的修复上下文。</span
+                  >
+                </div>
+                <span class="priority">P1</span>
+              </div>
+              <div class="mvp-row">
+                <div>
+                  <strong>结果记忆</strong
+                  ><span
+                    >发布后自动验证影响，把“建议 → 动作 →
+                    结果”沉淀为业务经验。</span
+                  >
+                </div>
+                <span class="priority">P1</span>
+              </div>
+            </div>
+
+            <div class="grid grid-3" style="margin-top: 24px">
+              <article class="card lime">
+                <span class="tag">Free</span>
+                <div class="metric">$0</div>
+                <h3>还没有信号</h3>
+                <p>
+                  1 个产品；基础健康检查；每周 1
+                  次简报。目标是等用户跨过数据阈值。
+                </p>
+              </article>
+              <article class="card headline-card">
+                <span class="tag">Founder</span>
+                <div class="metric">$12</div>
+                <h3>每天一个优先级</h3>
+                <p>
+                  3
+                  个连接源、异常、漏斗/留存解释、行动建议。按产品收费，不按事件制造焦虑。
+                </p>
+              </article>
+              <article class="card dark">
+                <span class="tag">Studio</span>
+                <div class="metric">$39</div>
+                <h3>多产品经营</h3>
+                <p>
+                  5 个产品、跨产品周报、portfolio 排序、共享指标模板与更长历史。
+                </p>
+              </article>
+            </div>
+            <p class="note">
+              价格是假设。DataFast 当前 Founder 档为 $5/月，OpenPanel
+              $2.5/月起，而 Usermaven 从 $84/月起；建议用“已避免的收入损失 /
+              节省的创始人时间”验证 $12–39 区间，而非仅按事件量对标。<sup
+                ><a href="#s11">11</a></sup
+              ><sup><a href="#s10">10</a></sup
+              ><sup><a href="#s12">12</a></sup>
+            </p>
+
+            <h3 style="margin: 38px 0 16px">最值得建立的三个差异化</h3>
+            <div class="grid grid-3">
+              <article class="card">
+                <div class="rank">A</div>
+                <h3 style="margin: 14px 0">从代码理解事件</h3>
+                <p>
+                  通过仓库 / MCP 读取产品流程，自动解释事件“真正代表什么”，降低
+                  event schema 的维护成本。
+                </p>
+              </article>
+              <article class="card blue">
+                <div class="rank">B</div>
+                <h3 style="margin: 14px 0">证据链，而非 AI 文案</h3>
+                <p>
+                  所有结论都能落回查询、用户、回放和发布；把可信度做成产品，而非
+                  disclaimer。
+                </p>
+              </article>
+              <article class="card coral">
+                <div class="rank">C</div>
+                <h3 style="margin: 14px 0">闭环到 coding agent</h3>
+                <p>
+                  把问题、影响人群、复现路径与相关代码一起交给 Codex / Claude
+                  Code，并自动复盘结果。
+                </p>
+              </article>
+            </div>
+          </section>
+
+          <section id="validation">
+            <div class="section-no">08 · Validation plan</div>
+            <h2>四周内验证的不是“喜欢吗”，而是“会不会照做并付费”。</h2>
+            <p class="section-lead">
+              避免再做一个由创始人自述需求驱动、最终无人打开的
+              dashboard。最强证据是：持续连接真实数据、执行建议、看到结果、继续付费。
+            </p>
+
+            <div class="grid grid-2">
+              <article class="card">
+                <span class="tag">Design partners</span>
+                <h3 style="margin: 14px 0">招募 20 个，不求大样本</h3>
+                <ul class="clean-list">
+                  <li>10 个 $500–$5K MRR</li>
+                  <li>6 个 $5K–$50K MRR</li>
+                  <li>4 个有用户但未变现</li>
+                  <li>至少一半正在使用 PostHog</li>
+                </ul>
+              </article>
+              <article class="card lime">
+                <span class="tag">Concierge first</span>
+                <h3 style="margin: 14px 0">先人工交付“增长简报”</h3>
+                <p>
+                  让用户只读连接数据；每周人工 + AI 生成 1
+                  个优先级和证据包。观察他们是否打开、追问、执行，并在下一周回看结果。
+                </p>
+              </article>
+            </div>
+
+            <div class="scorecard" style="margin-top: 20px">
+              <div class="head">验证指标</div>
+              <div class="head">通过线</div>
+              <div class="head">它证明什么</div>
+              <div class="label">连接完成率</div>
+              <div class="yes">≥ 60%</div>
+              <div>授权与数据接入摩擦可接受</div>
+              <div class="label">首周建议执行率</div>
+              <div class="yes">≥ 35%</div>
+              <div>输出不是“有趣”，而是可行动</div>
+              <div class="label">第 4 周留存</div>
+              <div class="yes">≥ 50%</div>
+              <div>有持续价值，不只是一次诊断</div>
+              <div class="label">愿付 $12–29/月</div>
+              <div class="yes">≥ 30%</div>
+              <div>价值超过免费替代与 DIY</div>
+              <div class="label">错误建议率</div>
+              <div class="warn">≤ 10%</div>
+              <div>AI 可信度足以进入经营决策</div>
+            </div>
+
+            <h3 style="margin: 38px 0 16px">先问这些，不要问“你会不会用”</h3>
+            <div class="grid grid-2">
+              <article class="card">
+                <ol class="clean-list">
+                  <li>上一次你发现激活或留存出问题，最初是怎么发现的？</li>
+                  <li>从发现到真正修复，中间打开了哪些工具、花了多久？</li>
+                  <li>最近一次因为数据不确定而没有做决定，发生了什么？</li>
+                </ol>
+              </article>
+              <article class="card">
+                <ol class="clean-list" start="4">
+                  <li>哪一个指标变化会让你今天停下手头工作？</li>
+                  <li>你如何确认某个渠道带来的不是“游客”，而是好客户？</li>
+                  <li>如果简报只能给一个建议，什么证据会让你相信它？</li>
+                </ol>
+              </article>
+            </div>
+
+            <div class="callout">
+              <strong>Kill criteria：</strong>若 20 个设计伙伴中少于 6
+              个愿意长期连接数据，或建议执行率低于 20%，应放弃“独立产品”，转向
+              PostHog / Stripe 插件、咨询式服务或特定垂直场景。
+            </div>
+          </section>
+
+          <section id="sources">
+            <div class="section-no">09 · Method & sources</div>
+            <h2>证据有方向性价值，但不能伪装成市场普查。</h2>
+            <p class="section-lead">
+              本报告将社媒讨论用于发现语言、情境与行为模式；将官方定价、公开收入和平台数据用于验证供需与付费。结论是产品发现假设，下一步仍需一手访谈和行为实验。
+            </p>
+
+            <div class="grid grid-3 method">
+              <article class="card">
+                <strong>覆盖</strong>
+                <p>
+                  检索 Reddit 的
+                  r/SaaS、r/SideProject、r/indiehackers、r/webdev、r/analytics
+                  等，以及 X 上的独立开发者公开帖与 launch traces。
+                </p>
+              </article>
+              <article class="card">
+                <strong>主题</strong>
+                <p>
+                  what analytics、retention、PostHog setup、GA4
+                  complexity、session replay、Stripe attribution、daily
+                  dashboard、actionable insights。
+                </p>
+              </article>
+              <article class="card">
+                <strong>偏差</strong>
+                <p>
+                  社媒用户偏技术、英文与公开构建；不少帖子带自推广。X
+                  可公开索引内容有限，因此 X
+                  更适合观察增长话语与传播，而非统计需求频次。
+                </p>
+              </article>
+            </div>
+
+            <div class="source-group">
+              <details open>
+                <summary>关键市场与平台数据</summary>
+                <div>
+                  <ol class="source-list">
+                    <li id="s1">
+                      <a
+                        href="https://stripe.com/blog/top-solo-founder-traits"
+                        target="_blank"
+                        rel="noopener"
+                        >Stripe Atlas — Solo founding is at an all-time high</a
+                      >：2026 Q2 单人创始人占 63%；中位数与头部差距扩大。
+                    </li>
+                    <li id="s2">
+                      <a
+                        href="https://stripe.com/blog/stripe-atlas-startups-in-2025-year-in-review"
+                        target="_blank"
+                        rel="noopener"
+                        >Stripe Atlas 2025 year in review</a
+                      >：23,000 家公司样本、20% 30 天内首单、42% AI 公司。
+                    </li>
+                    <li id="s3">
+                      <a
+                        href="https://newsletter.marclou.com/p/i-grew-a-saas-to-1m"
+                        target="_blank"
+                        rel="noopener"
+                        >Marc Lou — I grew a SaaS to $1M</a
+                      >：DataFast 从简单分析 + Stripe 起步，达到 $20K+ MRR。
+                    </li>
+                    <li id="s4">
+                      <a
+                        href="https://newsletter.marclou.com/p/i-made-1-032-000-in-2025"
+                        target="_blank"
+                        rel="noopener"
+                        >Marc Lou — 2025 revenue recap</a
+                      >：DataFast $15.8K MRR、接近 1,000 付费客户、约 7% churn。
+                    </li>
+                    <li id="s5">
+                      <a
+                        href="https://github.blog/news-insights/octoverse/octoverse-a-new-developer-joins-github-every-second-as-ai-leads-typescript-to-1/"
+                        target="_blank"
+                        rel="noopener"
+                        >GitHub Octoverse 2025</a
+                      >：180M+ 开发者、36M+ 年新增、每分钟 230+ 仓库、vibe
+                      coding 趋势。
+                    </li>
+                    <li id="s6">
+                      <a
+                        href="https://plausible.io/about"
+                        target="_blank"
+                        rel="noopener"
+                        >Plausible About</a
+                      >
+                      与
+                      <a
+                        href="https://plausible.io/blog/open-source-saas"
+                        target="_blank"
+                        rel="noopener"
+                        >$1M ARR 复盘</a
+                      >：20,000+ 付费订阅者、盈利且自筹资金。
+                    </li>
+                    <li id="s7">
+                      <a
+                        href="https://posthog.com/"
+                        target="_blank"
+                        rel="noopener"
+                        >PostHog pricing</a
+                      >：产品分析 1M events/月免费，98% 客户使用免费额度。
+                    </li>
+                    <li id="s8">
+                      <a
+                        href="https://amplitude.com/pricing"
+                        target="_blank"
+                        rel="noopener"
+                        >Amplitude pricing</a
+                      >：2M events/月免费。
+                    </li>
+                    <li id="s9">
+                      <a
+                        href="https://mixpanel.com/pricing/"
+                        target="_blank"
+                        rel="noopener"
+                        >Mixpanel pricing</a
+                      >：1M events/月免费。
+                    </li>
+                    <li id="s10">
+                      <a
+                        href="https://openpanel.dev/pricing"
+                        target="_blank"
+                        rel="noopener"
+                        >OpenPanel pricing</a
+                      >：5K events/月 $2.5，或免费自托管。
+                    </li>
+                    <li id="s11">
+                      <a
+                        href="https://datafast.app/pricing"
+                        target="_blank"
+                        rel="noopener"
+                        >DataFast pricing</a
+                      >：免费档与 $5/月 Founder 档。
+                    </li>
+                    <li id="s12">
+                      <a
+                        href="https://usermaven.com/pricing"
+                        target="_blank"
+                        rel="noopener"
+                        >Usermaven pricing</a
+                      >：产品、网站、收入、AI 一体化，Growth $84/月起。
+                    </li>
+                  </ol>
+                </div>
+              </details>
+
+              <details open>
+                <summary>Reddit 用户讨论样本</summary>
+                <div>
+                  <ol class="source-list">
+                    <li id="r1">
+                      <a
+                        href="https://www.reddit.com/r/analytics/comments/1rkyo1q/after_5_years_at_google_and_building_my_own_app_i/"
+                        target="_blank"
+                        rel="noopener"
+                        >Insight 到修复之间的结构性断裂</a
+                      >：分析、代码、数据库分别知道 what / how / who。
+                    </li>
+                    <li id="r2">
+                      <a
+                        href="https://www.reddit.com/r/SideProject/comments/1sgiydl/my_app_has_2000_users_but_retention_is_still_my/"
+                        target="_blank"
+                        rel="noopener"
+                        >2,000+ 用户但留存仍是最大问题</a
+                      >：注册后不行动；评论建议回放前 90 秒。
+                    </li>
+                    <li id="r3">
+                      <a
+                        href="https://www.reddit.com/r/SaasDevelopers/comments/1vfzfj6/founders_where_do_you_actually_check_your_saas/"
+                        target="_blank"
+                        rel="noopener"
+                        >创始人每天在哪里看 SaaS 指标</a
+                      >：PostHog 面板压倒性、改用 Claude 提问；“银行账户是
+                      KPI”。
+                    </li>
+                    <li id="r4">
+                      <a
+                        href="https://www.reddit.com/r/SaaS/comments/1rm45vd/solo_founders_on_supabasestripeposthog_how_many/"
+                        target="_blank"
+                        rel="noopener"
+                        >Supabase / Stripe / PostHog 多面板晨间检查</a
+                      >：15–20 分钟、希望一行异常摘要。
+                    </li>
+                    <li id="r5">
+                      <a
+                        href="https://www.reddit.com/r/saasbuild/comments/1tillb5/foundersbuilders_what_analytics_stack_are_you/"
+                        target="_blank"
+                        rel="noopener"
+                        >Micro SaaS 何时需要 serious analytics</a
+                      >：早期访谈优于面板，约 200–500 MAU 后模式更难人工识别。
+                    </li>
+                    <li id="r6">
+                      <a
+                        href="https://www.reddit.com/r/webdev/comments/1prbwaw/i_built_my_own_free_mvp_privacyfirst_analytics/"
+                        target="_blank"
+                        rel="noopener"
+                        >多项目开发者自建隐私分析</a
+                      >：GA 重、复杂；现有简洁产品多站点后价格上升。
+                    </li>
+                    <li id="r7">
+                      <a
+                        href="https://www.reddit.com/r/SaaS/comments/1t9mijl/so_i_got_tired_of_my_own_complaining_and_built_a/"
+                        target="_blank"
+                        rel="noopener"
+                        >AI 解析 session / event log</a
+                      >：评论强调输出必须结束于决定，而不是另一个面板。
+                    </li>
+                    <li id="r8">
+                      <a
+                        href="https://www.reddit.com/r/indiehackers/comments/1smtafn/how_do_i_find_out_why_people_visited_my_website/"
+                        target="_blank"
+                        rel="noopener"
+                        >为什么访问但不注册</a
+                      >：漏斗 + 回放 + 直接询问；低流量时访谈信号更强。
+                    </li>
+                    <li>
+                      <a
+                        href="https://www.reddit.com/r/SideProject/comments/1ro2gi2/what_are_the_metrics_you_track_in_analytics/"
+                        target="_blank"
+                        rel="noopener"
+                        >Side project 应该看哪些指标</a
+                      >：activation、time-to-value、weekly returning
+                      users、drop-off。
+                    </li>
+                    <li>
+                      <a
+                        href="https://www.reddit.com/r/SideProject/comments/1ntj6po/5_free_tools_i_used_to_get_my_first_50_users/"
+                        target="_blank"
+                        rel="noopener"
+                        >首 50 用户工具复盘</a
+                      >：回放发现移动端故障；缩短 onboarding 后留存改善。
+                    </li>
+                    <li>
+                      <a
+                        href="https://www.reddit.com/r/indie_startups/comments/1tpfccf/are_we_all_drowning_in_dashboards_instead_of/"
+                        target="_blank"
+                        rel="noopener"
+                        >Solo founder 被 15+ dashboards 淹没</a
+                      >：想要统一上下文、优先级与 founder-level insights。
+                    </li>
+                    <li>
+                      <a
+                        href="https://www.reddit.com/r/indiehackers/comments/1mofedo/we_dropped_fullstorymixpanel_and_built_a_tiny/"
+                        target="_blank"
+                        rel="noopener"
+                        >从 FullStory / Mixpanel 转向内部小工具</a
+                      >：只需要留存、漏斗、错误流，强调可预测价格。
+                    </li>
+                    <li>
+                      <a
+                        href="https://www.reddit.com/r/webdev/comments/12ol6nx/google_analytics_alternative_for_small_sites/"
+                        target="_blank"
+                        rel="noopener"
+                        >小站点 GA 替代</a
+                      >：低流量导致自定义事件不可见，讨论自建与隐私替代。
+                    </li>
+                    <li>
+                      <a
+                        href="https://www.reddit.com/r/webdev/comments/1gv6ya6/building_your_own_super_simple_analytics_dumb/"
+                        target="_blank"
+                        rel="noopener"
+                        >为个人项目自建简单分析</a
+                      >：只记录少数业务字段，避免 consent 与复杂配置。
+                    </li>
+                  </ol>
+                </div>
+              </details>
+
+              <details>
+                <summary>X / Build-in-public 信号</summary>
+                <div>
+                  <ol class="source-list">
+                    <li id="x1">
+                      <a
+                        href="https://x.com/levelsio/status/969441437338058752"
+                        target="_blank"
+                        rel="noopener"
+                        >@levelsio 公开 Remote OK 收入与用户指标</a
+                      >：经营指标兼具管理与社会证明作用。
+                    </li>
+                    <li>
+                      <a
+                        href="https://x.com/levelsio/status/1752075138919473349"
+                        target="_blank"
+                        rel="noopener"
+                        >@levelsio 关于取消免费计划</a
+                      >：独立经营者关注支持成本与收入结果，而非使用量本身。
+                    </li>
+                    <li>
+                      <a
+                        href="https://x.com/GergelyOrosz/status/1676163004168040449"
+                        target="_blank"
+                        rel="noopener"
+                        >@GergelyOrosz 引用 PhotoAI 的付费用户与 MRR</a
+                      >：用户不关心技术栈，经营结果才是故事核心。
+                    </li>
+                    <li>
+                      <a
+                        href="https://x.com/marclou/status/1840694924452520247/photo/1"
+                        target="_blank"
+                        rel="noopener"
+                        >DataFast 的 X 公开发布</a
+                      >：创始人复盘称首轮公开发布带来首批用户与约 $500 MRR。
+                    </li>
+                    <li>
+                      <a
+                        href="https://x.com/marc_louvion/status/1873711888305160515"
+                        target="_blank"
+                        rel="noopener"
+                        >Marc Lou 的 2025 公开经营更新</a
+                      >：公开收入与产品进展构成持续分发机制。
+                    </li>
+                  </ol>
+                </div>
+              </details>
+            </div>
+
+            <div class="callout">
+              <strong>阅读边界：</strong>Reddit 与 X
+              上的高频发帖者不是沉默多数；很多“分析工具痛点”由正在做同类工具的人提出。报告已把这种内容当作问题线索，而没有直接当作需求规模证据。
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <footer class="footer">
+        <div>
+          <strong>Vibe Coding × Product Analytics</strong
+          ><br />用户洞察与市场机会报告 · 2026-08-20
+        </div>
+        <div>结论：不要卖更多数据。卖更少的犹豫。</div>
+        <button class="print-btn" onclick="window.print()">
+          打印 / 导出 PDF
+        </button>
+      </footer>
+    </div>
+
+    <script>
+      const progress = document.querySelector(".progress");
+      const links = [...document.querySelectorAll('.toc a[href^="#"]')].filter(
+        (a) => a.getAttribute("href") !== "#",
+      );
+      const sections = links
+        .map((a) => document.querySelector(a.getAttribute("href")))
+        .filter(Boolean);
+      function onScroll() {
+        const doc = document.documentElement;
+        const max = doc.scrollHeight - doc.clientHeight;
+        progress.style.width = `${max > 0 ? (doc.scrollTop / max) * 100 : 0}%`;
+        let current = sections[0];
+        for (const section of sections)
+          if (section.getBoundingClientRect().top <= 140) current = section;
+        links.forEach((a) =>
+          a.classList.toggle(
+            "active",
+            current && a.getAttribute("href") === `#${current.id}`,
+          ),
+        );
+      }
+      addEventListener("scroll", onScroll, { passive: true });
+      onScroll();
+    </script>
+  </body>
+</html>
