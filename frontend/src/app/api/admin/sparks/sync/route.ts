@@ -6,7 +6,7 @@ import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase';
 
 const ROOT = process.cwd();
 const AUTO_CARDS = path.join(ROOT, 'frontend', 'src', 'data', 'cards.auto.json');
-const SOURCES = path.join(ROOT, 'backend', 'sparks_sources.json');
+const SOURCES = path.join(ROOT, 'frontend', 'data', 'sparks_sources.json');
 const KB_DIR = path.join(ROOT, '产品知识库');
 
 const CATEGORY_MAP: Record<string, string> = {

@@ -58,6 +58,7 @@ export interface DbConversation {
   id: string;
   session_id: string;
   messages: Array<{ role: string; content: string }>;
+  agent_items?: Array<Record<string, unknown>>;
   summary?: Record<string, unknown>;
   stage: string;
   created_at?: string;

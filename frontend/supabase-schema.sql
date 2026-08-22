@@ -66,6 +66,7 @@ ALTER TABLE conversations ADD COLUMN IF NOT EXISTS starred BOOLEAN DEFAULT FALSE
 ALTER TABLE conversations ADD COLUMN IF NOT EXISTS starred_at TIMESTAMPTZ;
 ALTER TABLE conversations ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES users(id);
 ALTER TABLE conversations ADD COLUMN IF NOT EXISTS title TEXT;
+ALTER TABLE conversations ADD COLUMN IF NOT EXISTS agent_items JSONB DEFAULT '[]';
 
 CREATE INDEX IF NOT EXISTS idx_conversations_user_id ON conversations(user_id);
 

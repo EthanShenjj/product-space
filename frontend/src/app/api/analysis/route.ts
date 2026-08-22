@@ -1,6 +1,10 @@
 import { NextRequest } from 'next/server';
 import { getExpertById, generateTargetUserPrompt } from '@/data/experts';
-import { createAICompletion } from '@/lib/ai-client';
+import { createExpertAgent } from '@/server/agents/definitions';
+import { streamWithFallback } from '@/server/agents/runtime';
+import { encodeTextStream } from '@/server/agents/stream';
+
+export const runtime = 'nodejs';
 
 // 根据用户目标生成额外的提示词
 function getGoalPrompt(userGoal: string): string {
@@ -207,60 +211,17 @@ ${scoreStandardVariant}
   ];
 
   try {
-    const { response, provider } = await createAICompletion({
-      messages,
-      stream: true,
-    });
+    const { result, provider } = await streamWithFallback(
+      (model) => createExpertAgent(model, messages[0].content),
+      messages[1].content,
+      { workflowName: `expert-analysis-${expertId}` },
+    );
 
-    console.log(`[Analysis API] Using provider: ${provider}`);
-
-    // 返回流式响应
-    const encoder = new TextEncoder();
-    const stream = new ReadableStream({
-      async start(controller) {
-        const reader = response.body?.getReader();
-        if (!reader) {
-          controller.close();
-          return;
-        }
-
-        const decoder = new TextDecoder();
-        let buffer = '';
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6);
-              if (data === '[DONE]') continue;
-
-              try {
-                const parsed = JSON.parse(data);
-                const content = parsed.choices?.[0]?.delta?.content;
-                if (content) {
-                  controller.enqueue(encoder.encode(content));
-                }
-              } catch {
-                // 忽略解析错误
-              }
-            }
-          }
-        }
-
-        controller.close();
-      },
-    });
-
-    return new Response(stream, {
+    console.log(`[Analysis API] Using provider: ${provider.name}`);
+    return new Response(encodeTextStream(result.toTextStream()), {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
-        'Transfer-Encoding': 'chunked',
+        'Cache-Control': 'no-cache, no-transform',
       },
     });
   } catch (error) {

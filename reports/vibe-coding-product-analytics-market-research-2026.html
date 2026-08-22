@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="light" />
     <meta
       name="description"
-      content="Vibe Coding 与一人公司产品分析市场：基于 Reddit、X 与公开产品数据的用户洞察报告。"
+      content="Vibe Coding 与一人公司产品分析市场：基于 Reddit、X、公开产品数据与 ta-common-service 能力审视的用户洞察及 SWOT 报告。"
     />
     <title>Vibe Coding × 产品分析｜用户洞察与市场机会报告</title>
     <style>
@@ -937,6 +937,7 @@
             <span>Reddit / X 社媒洞察</span>
             <span>独立开发者 × Micro SaaS</span>
             <span>桌面研究：2026-08-20</span>
+            <span>ta-common-service 能力审视</span>
             <span>方向性样本，不代表总体统计</span>
           </div>
         </div>
@@ -961,8 +962,9 @@
           <a href="#market">05 市场判断</a>
           <a href="#competition">06 竞争格局</a>
           <a href="#opportunity">07 产品机会</a>
-          <a href="#validation">08 验证计划</a>
-          <a href="#sources">09 方法与来源</a>
+          <a href="#swot">08 平台 SWOT</a>
+          <a href="#validation">09 验证计划</a>
+          <a href="#sources">10 方法与来源</a>
           <a
             class="download"
             href="#"
@@ -1744,8 +1746,141 @@
             </div>
           </section>
 
+          <section id="swot">
+            <div class="section-no">08 · Platform SWOT</div>
+            <h2>复用分析内核，重做个人产品的决策体验。</h2>
+            <p class="section-lead">
+              结合 <code>ta-common-service</code>
+              当前代码、MCP 工具面与在建能力来看，最优路线不是把企业分析平台“缩小”，而是把它变成一个无感的分析引擎：前台只交付增长问题、证据和下一步行动。
+            </p>
+
+            <div class="grid grid-2">
+              <article class="card lime">
+                <span class="tag">S · Strengths</span>
+                <h3 style="margin: 14px 0">分析底座完整，离“可信判断”比新项目更近</h3>
+                <ul class="clean-list">
+                  <li>
+                    已覆盖事件、漏斗、留存、属性、分布、归因、路径等分析，并有报表、看板和 BI 面板承载结果。
+                  </li>
+                  <li>
+                    指标、虚拟事件/属性、分群、标签与用户下钻可组成“发现问题 → 定位人群 → 验证原因”的证据链。
+                  </li>
+                  <li>
+                    MCP / CLI 与模型专用 QP Builder 已把自然语言意图连接到真实查询，降低 AI 手写复杂查询的错误率。
+                  </li>
+                  <li>
+                    告警、日报与摘要推送已覆盖邮件、飞书、钉钉、企微、Slack、Webhook，具备主动交付基础。
+                  </li>
+                </ul>
+              </article>
+
+              <article class="card dark">
+                <span class="tag">W · Weaknesses</span>
+                <h3 style="margin: 14px 0">企业级能力很重，产品心智仍是“分析工作台”</h3>
+                <ul class="clean-list">
+                  <li>
+                    多模块 Java 服务依赖 MySQL、Redis、Trino/Hive、调度与权限体系，部署和运维成本不匹配 $12–39/月的个人产品。
+                  </li>
+                  <li>
+                    项目、空间、报表、看板、指标与复杂权限对团队合理，对个人用户却会放大配置和学习成本。
+                  </li>
+                  <li>
+                    当前强项是“把问题查清楚”，尚未原生完成“只给一个优先级 → 创建行动 → 发布后复盘”的经营闭环。
+                  </li>
+                  <li>
+                    缺少面向 solo builder 的即插即用真相源：Stripe、RevenueCat、Supabase、代码仓库与发布记录仍需专门连接。
+                  </li>
+                </ul>
+              </article>
+
+              <article class="card blue">
+                <span class="tag">O · Opportunities</span>
+                <h3 style="margin: 14px 0">把成熟能力封装成“AI 增长值班经理”</h3>
+                <ul class="clean-list">
+                  <li>
+                    用只读连接器接入已有产品数据，不迁移采集层；以分析内核完成异常、漏斗、留存和人群定位。
+                  </li>
+                  <li>
+                    将指标体系模板化：订阅 SaaS、移动应用、内容产品分别预置 aha、激活、付费与留存树。
+                  </li>
+                  <li>
+                    复用告警与摘要推送，交付“变化 → 绝对贡献 → 证据 → 建议”，从被动看板升级为每日经营入口。
+                  </li>
+                  <li>
+                    把分群结果变成访谈名单，把问题上下文交给 coding agent，再用项目标记时间与分析查询自动验证改版结果。
+                  </li>
+                </ul>
+              </article>
+
+              <article class="card coral">
+                <span class="tag">T · Threats</span>
+                <h3 style="margin: 14px 0">免费替代、低客单价与 AI 误判会同时挤压空间</h3>
+                <ul class="clean-list">
+                  <li>
+                    PostHog、Amplitude、Mixpanel 的免费层和“现有工具 + MCP + 通用模型”会持续压低基础分析的价格。
+                  </li>
+                  <li>
+                    个人产品数据量小、波动大；若把相关性写成因果，少量错误建议就足以透支信任。
+                  </li>
+                  <li>
+                    同时读取行为、收入、数据库与代码会扩大授权、隐私、凭证和数据隔离风险。
+                  </li>
+                  <li>
+                    企业底座的发布节奏与架构约束，可能让轻量竞争者更快完成连接、定价和自助 onboarding。
+                  </li>
+                </ul>
+              </article>
+            </div>
+
+            <h3 style="margin: 38px 0 16px">能力取舍：不是迁移路线，而是产品边界</h3>
+            <div class="mvp-list">
+              <div class="mvp-row">
+                <div>
+                  <strong>直接复用 · Analysis kernel</strong
+                  ><span
+                    >分析模型、元数据/指标、分群/标签、用户下钻、告警、查询治理与结果缓存。</span
+                  >
+                </div>
+                <span class="priority">KEEP</span>
+              </div>
+              <div class="mvp-row">
+                <div>
+                  <strong>轻量封装 · Delivery layer</strong
+                  ><span
+                    >MCP / CLI、报表与看板、摘要推送；隐藏配置，只向用户展示结论、证据与历史。</span
+                  >
+                </div>
+                <span class="priority">WRAP</span>
+              </div>
+              <div class="mvp-row">
+                <div>
+                  <strong>必须新建 · Founder context</strong
+                  ><span
+                    >Stripe / RevenueCat / Supabase / Git 仓库与发布连接器、商业模式模板、单一优先级、行动与结果记忆。</span
+                  >
+                </div>
+                <span class="priority">BUILD</span>
+              </div>
+              <div class="mvp-row">
+                <div>
+                  <strong>首版舍弃 · Enterprise surface</strong
+                  ><span
+                    >公司/多角色权限、复杂空间管理、重型 BI 编辑、数据仓库运维、多集群路由与企业管理后台。</span
+                  >
+                </div>
+                <span class="priority">DROP</span>
+              </div>
+            </div>
+
+            <div class="callout">
+              <strong>SWOT 结论：</strong
+              >这是一个“强内核、弱产品层”的机会。若直接售卖现有平台，W/T
+              会压过 S/O；若把平台藏在后台，仅保留可信查询、主动推送与人群定位，再补齐个人产品连接器和行动闭环，已有资产会形成显著的时间优势。
+            </div>
+          </section>
+
           <section id="validation">
-            <div class="section-no">08 · Validation plan</div>
+            <div class="section-no">09 · Validation plan</div>
             <h2>四周内验证的不是“喜欢吗”，而是“会不会照做并付费”。</h2>
             <p class="section-lead">
               避免再做一个由创始人自述需求驱动、最终无人打开的
@@ -1820,7 +1955,7 @@
           </section>
 
           <section id="sources">
-            <div class="section-no">09 · Method & sources</div>
+            <div class="section-no">10 · Method & sources</div>
             <h2>证据有方向性价值，但不能伪装成市场普查。</h2>
             <p class="section-lead">
               本报告将社媒讨论用于发现语言、情境与行为模式；将官方定价、公开收入和平台数据用于验证供需与付费。结论是产品发现假设，下一步仍需一手访谈和行为实验。
@@ -2141,6 +2276,12 @@
               <strong>阅读边界：</strong>Reddit 与 X
               上的高频发帖者不是沉默多数；很多“分析工具痛点”由正在做同类工具的人提出。报告已把这种内容当作问题线索，而没有直接当作需求规模证据。
             </div>
+            <p class="note">
+              平台 SWOT 另基于 2026-08-20 对本地
+              <code>ta-common-service</code>
+              仓库的静态代码审视，覆盖 Maven 模块、Web Controller、MCP
+              工具、分析 QP Builder、摘要推送与 OpenSpec 变更。它说明“代码中已有或正在落地的能力”，不等同于对生产环境性能、稳定性、授权许可与实际用户采用率的验证。
+            </p>
           </section>
         </main>
       </div>

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '../_lib';
-import { getActiveProviders } from '@/lib/ai-client';
+import { getActiveProviderNames } from '@/server/agents/providers';
 
 export async function GET() {
   // 验证管理员身份
@@ -9,7 +9,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const activeProviders = getActiveProviders();
+  const activeProviders = getActiveProviderNames();
   const primaryProvider = activeProviders[0] || 'None';
 
   // Cloudsway 用量信息（如果配置了）

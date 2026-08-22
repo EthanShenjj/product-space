@@ -609,7 +609,7 @@ export function useChat() {
         const userMsg: Message = { id: Date.now().toString(), role: 'user', content };
         const currentMessages = [...messages, userMsg];
         setMessages(currentMessages);
-        void saveConversation(
+        await saveConversation(
             currentMessages.map(m => ({ role: m.role, content: m.content })),
             summary,
             currentStage,
@@ -627,6 +627,7 @@ export function useChat() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     messages: currentMessages.map(m => ({ role: m.role, content: m.content })),
+                    sessionId: getSessionId(),
                     inviteCode: getInviteCode(),
                     modelConfig: selectedModel.isDefault ? undefined : {
                         name: selectedModel.name,
