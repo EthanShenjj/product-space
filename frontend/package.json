@@ -13,13 +13,15 @@
     "sparks:scan": "tsx scripts/sparks-scan.ts",
     "sparks:generate": "tsx scripts/sparks-generate.ts",
     "kb:process": "tsx scripts/kb-process.ts",
-    "kb:watch": "tsx scripts/kb-watch.ts"
+    "kb:watch": "tsx scripts/kb-watch.ts",
+    "sandbox:snapshot": "tsx scripts/sandbox-create-snapshot.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.44",
     "@openai/agents": "^0.17.0",
     "@openai/agents-extensions": "^0.17.0",
     "@supabase/supabase-js": "^2.91.1",
+    "@vercel/sandbox": "^1.10.2",
     "ai": "^7.0.70",
     "clsx": "^2.1.1",
     "html2canvas": "^1.4.1",

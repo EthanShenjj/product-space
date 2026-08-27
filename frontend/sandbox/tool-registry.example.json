@@ -1,0 +1,28 @@
+{
+  "tools": [
+    {
+      "id": "example-cli",
+      "label": "示例 CLI",
+      "description": "在隔离 VM 中运行预安装的只读 CLI。",
+      "kind": "cli",
+      "command": "example-cli",
+      "args": ["--format", "json"],
+      "input": "json-file",
+      "network": [],
+      "timeoutMs": 30000,
+      "install": ["example-cli@1.2.3"]
+    },
+    {
+      "id": "example-mcp",
+      "label": "示例 MCP 工具",
+      "description": "由预安装的 MCP wrapper 执行；客户端不能指定服务器、命令或凭据。",
+      "kind": "mcp",
+      "command": "product-mcp-runner",
+      "args": ["example-mcp"],
+      "input": "json-file",
+      "network": ["api.example.com"],
+      "timeoutMs": 30000,
+      "install": ["@productthink/mcp-runner@1.0.0"]
+    }
+  ]
+}

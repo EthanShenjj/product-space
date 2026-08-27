@@ -21,6 +21,7 @@ type ChatStreamEvent =
   | { type: 'meta'; provider: string }
   | { type: 'text'; delta: string }
   | { type: 'step'; id: string; kind: 'reasoning' | 'tool'; label: string; status: 'running' | 'completed'; detail?: string }
+  | { type: 'sandbox_proposal'; proposal: Record<string, unknown> }
   | { type: 'done' };
 
 function toSse(event: ChatStreamEvent) {
@@ -43,6 +44,7 @@ function shortQuery(argumentsText: unknown) {
 
 function toolLabel(name: string) {
   if (name === 'search_product_knowledge' || name.includes('file_search')) return '检索产品知识库';
+  if (name === 'propose_sandbox_tool') return '生成云端工具安装提案';
   return `调用工具：${name}`;
 }
 
@@ -54,6 +56,21 @@ function toolDetail(name: string, output: unknown) {
     .filter(Boolean)
     .slice(0, 3);
   return sources.length ? `已找到：${sources.join('、')}` : '已完成知识库检索';
+}
+
+function sandboxProposal(output: unknown) {
+  if (typeof output === 'string') {
+    try {
+      return sandboxProposal(JSON.parse(output));
+    } catch {
+      return undefined;
+    }
+  }
+  if (!output || typeof output !== 'object') return undefined;
+  const record = output as Record<string, unknown>;
+  return record.type === 'sandbox_proposal' && record.proposal && typeof record.proposal === 'object'
+    ? record.proposal as Record<string, unknown>
+    : undefined;
 }
 
 function processRunEvent(event: RunStreamEvent): ChatStreamEvent[] {
@@ -91,6 +108,8 @@ function processRunEvent(event: RunStreamEvent): ChatStreamEvent[] {
     const name = typeof rawItem?.name === 'string' ? rawItem.name : '工具';
     const callId = typeof rawItem?.callId === 'string' ? rawItem.callId : name;
     const output = 'output' in event.item ? event.item.output : undefined;
+    const proposal = name === 'propose_sandbox_tool' ? sandboxProposal(output) : undefined;
+    if (proposal) return [{ type: 'sandbox_proposal', proposal }];
     return [{
       type: 'step',
       id: `tool:${callId}`,

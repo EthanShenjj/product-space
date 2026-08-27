@@ -7,6 +7,20 @@ export interface Message {
         status: 'running' | 'completed';
         steps: ExecutionStep[];
     };
+    sandboxProposals?: SandboxProposal[];
+}
+
+export interface SandboxProposal {
+    id: string;
+    kind: 'cli' | 'mcp' | 'skill';
+    label: string;
+    description: string;
+    packageName: string;
+    packageVersion: string;
+    command: string;
+    args: string[];
+    network: string[];
+    reason: string;
 }
 
 export interface ExecutionStep {

@@ -3,6 +3,7 @@ import type { Model } from '@openai/agents';
 import { z } from 'zod';
 import { PRODUCT_JUDGE_SYSTEM_PROMPT } from '@/data/prompts';
 import { createKnowledgeTool } from './knowledge';
+import { createSandboxProposalTool } from '@/server/sandbox/proposal';
 import type { Persona, RoleFeedback, SummaryOutput } from './types';
 
 export const summarySchema = z.object({
@@ -49,8 +50,10 @@ export function createProductAdvisor(model: Model) {
     model,
     instructions: `${PRODUCT_JUDGE_SYSTEM_PROMPT}
 
-当用户询问产品案例、方法论、增长策略、竞争或验证方式时，先使用 search_product_knowledge 检索，再自然引用结果。不要虚构知识库来源。`,
-    tools: knowledgeTools(model),
+当用户询问产品案例、方法论、增长策略、竞争或验证方式时，先使用 search_product_knowledge 检索，再自然引用结果。不要虚构知识库来源。
+
+当用户明确要求为自己的云端沙箱添加 CLI、MCP 或 Skill 时：只能调用 propose_sandbox_tool 创建待确认提案，不能声称已安装、不能自行执行命令、不能代替用户确认。包名、精确版本或固定命令不明确时，先提问补齐信息。`,
+    tools: [...knowledgeTools(model), createSandboxProposalTool()],
   });
 }
 

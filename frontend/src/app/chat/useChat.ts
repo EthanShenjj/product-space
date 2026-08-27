@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { ExecutionStep, Message, Summary, Stage, StageConfig } from './types';
+import { ExecutionStep, Message, SandboxProposal, Summary, Stage, StageConfig } from './types';
 import { useModelSettings } from './useModelSettings';
 import { WELCOME_MESSAGE } from '@/data/prompts';
 import {
@@ -41,6 +41,7 @@ type ChatSseEvent =
     | { type: 'meta'; provider: string }
     | { type: 'text'; delta: string }
     | { type: 'step'; id: string; kind: ExecutionStep['kind']; label: string; status: ExecutionStep['status']; detail?: string }
+    | { type: 'sandbox_proposal'; proposal: SandboxProposal }
     | { type: 'done' };
 
 const initialSummary: Summary = {
@@ -715,6 +716,15 @@ export function useChat() {
                             ? [...execution.steps, step]
                             : execution.steps.map((item, index) => index === existingIndex ? { ...item, ...step } : item);
                         return { ...m, execution: { ...execution, steps } };
+                    }));
+                    return;
+                }
+                if (event.type === 'sandbox_proposal') {
+                    setMessages(prev => prev.map(m => {
+                        if (m.id !== assistantId) return m;
+                        const existing = m.sandboxProposals || [];
+                        if (existing.some((proposal) => proposal.id === event.proposal.id)) return m;
+                        return { ...m, sandboxProposals: [...existing, event.proposal] };
                     }));
                     return;
                 }

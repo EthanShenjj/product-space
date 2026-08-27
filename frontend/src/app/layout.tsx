@@ -25,7 +25,7 @@ export default function RootLayout({
           <PageViewTracker />
         </Suspense>
         <FeedbackDrawer />
-        <main className="flex-1 flex flex-col">
+        <main className="flex flex-1 flex-col pt-16">
           {children}
         </main>
       </body>

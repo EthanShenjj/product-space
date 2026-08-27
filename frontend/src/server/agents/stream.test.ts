@@ -35,4 +35,20 @@ describe('encodeAgentEventStream', () => {
     expect(output).not.toContain('不应发送给客户端的长篇检索内容');
     expect(output).toContain('"type":"done"');
   });
+
+  it('emits a user-confirmable sandbox proposal instead of treating it as a command result', async () => {
+    const result = {
+      async *[Symbol.asyncIterator]() {
+        yield { type: 'run_item_stream_event', name: 'tool_output', item: {
+          rawItem: { name: 'propose_sandbox_tool', callId: 'proposal-1' },
+          output: { type: 'sandbox_proposal', proposal: { id: 'tool-a', kind: 'cli', label: 'Tool A' } },
+        } };
+      },
+    } as any;
+
+    const output = await readStream(encodeAgentEventStream(result, 'OpenAI'));
+    expect(output).toContain('"type":"sandbox_proposal"');
+    expect(output).toContain('"id":"tool-a"');
+    expect(output).not.toContain('工具执行完成');
+  });
 });
