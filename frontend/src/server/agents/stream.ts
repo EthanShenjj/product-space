@@ -44,11 +44,19 @@ function shortQuery(argumentsText: unknown) {
 
 function toolLabel(name: string) {
   if (name === 'search_product_knowledge' || name.includes('file_search')) return '检索产品知识库';
+  if (name === 'search_web') return '联网搜索公开来源';
   if (name === 'propose_sandbox_tool') return '生成云端工具安装提案';
   return `调用工具：${name}`;
 }
 
 function toolDetail(name: string, output: unknown) {
+  if (name === 'search_web') {
+    const text = typeof output === 'string' ? output : JSON.stringify(output ?? '');
+    const sources = Array.from(text.matchAll(/来源\s*\d*[：:]\s*(https?:\/\/\S+)/g))
+      .map((match) => match[1].replace(/[),。]+$/u, ''))
+      .slice(0, 3);
+    return sources.length ? `已检索：${sources.join('、')}` : '已完成联网搜索';
+  }
   if (name !== 'search_product_knowledge' && !name.includes('file_search')) return '工具执行完成';
   const text = typeof output === 'string' ? output : JSON.stringify(output ?? '');
   const sources = Array.from(text.matchAll(/(?:来源\s*\d*[：:]\s*|\[)([^\]\n：:]{1,120})/g))
