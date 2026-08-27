@@ -14,11 +14,13 @@ import {
 } from '@/lib/tracking';
 
 // 获取会话 ID
+const createSessionId = (): string => `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+
 const getSessionId = (): string => {
     if (typeof window === 'undefined') return '';
     let sessionId = sessionStorage.getItem('track_session_id');
     if (!sessionId) {
-        sessionId = `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+        sessionId = createSessionId();
         sessionStorage.setItem('track_session_id', sessionId);
     }
     return sessionId;
@@ -40,6 +42,14 @@ type ChatSseEvent =
     | { type: 'text'; delta: string }
     | { type: 'step'; id: string; kind: ExecutionStep['kind']; label: string; status: ExecutionStep['status']; detail?: string }
     | { type: 'done' };
+
+const initialSummary: Summary = {
+    productTitle: '',
+    product: '等待你介绍产品后生成…',
+    aiAdvice: '先聊聊你的产品背景，我会持续整理建议。',
+    userNotes: '还没有记录到你的观点。',
+    cases: [],
+};
 
 // 保存对话到数据库
 const saveConversation = async (
@@ -464,13 +474,7 @@ export function useChat() {
             content: WELCOME_MESSAGE,
         },
     ]);
-    const [summary, setSummary] = useState<Summary>({
-        productTitle: '',
-        product: '等待你介绍产品后生成…',
-        aiAdvice: '先聊聊你的产品背景，我会持续整理建议。',
-        userNotes: '还没有记录到你的观点。',
-        cases: [],
-    });
+    const [summary, setSummary] = useState<Summary>(initialSummary);
     const [deepTurns, setDeepTurns] = useState(0);
     const [userSignals, setUserSignals] = useState({
         user: false,
@@ -831,6 +835,20 @@ export function useChat() {
         }
     }, []);
 
+    const startNewConversation = useCallback(() => {
+        const newSessionId = createSessionId();
+        setSessionId(newSessionId);
+        setCurrentSessionId(newSessionId);
+        setInput('');
+        setMessages([{ id: `welcome-${newSessionId}`, role: 'assistant', content: WELCOME_MESSAGE }]);
+        setSummary(initialSummary);
+        setCurrentStage('info');
+        setDeepTurns(0);
+        setUserMessageCount(0);
+        setUserCharCount(0);
+        setUserSignals({ user: false, scenario: false, pain: false, value: false, stage: false, monetize: false });
+    }, []);
+
     const stageConfig: StageConfig = {
         ...stageConfigs[currentStage],
         checklist: stageConfigs[currentStage].checklist.map(item => ({
@@ -863,5 +881,6 @@ export function useChat() {
         handleSend,
         handleQuickSend,
         loadConversation,
+        startNewConversation,
     };
 }

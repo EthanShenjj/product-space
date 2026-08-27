@@ -3,10 +3,35 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
-import { MessageSquare, Library, Sparkles } from 'lucide-react';
+import { LogOut, MessageSquare, Library, Sparkles, UserRound } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+interface CurrentUser {
+    email: string;
+    nickname?: string;
+    avatarUrl?: string;
+}
 
 export default function Navbar() {
     const pathname = usePathname();
+    const [user, setUser] = useState<CurrentUser | null>(null);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+    useEffect(() => {
+        fetch('/api/auth/me')
+            .then(response => response.ok ? response.json() : null)
+            .then(data => setUser(data?.user || null))
+            .catch(() => setUser(null));
+    }, []);
+
+    const logout = async () => {
+        await fetch('/api/auth/logout', { method: 'POST' }).catch(() => undefined);
+        setUser(null);
+        setIsProfileOpen(false);
+    };
+
+    const displayName = user?.nickname || user?.email?.split('@')[0] || '访客';
+    const avatarText = displayName.slice(0, 1).toUpperCase();
 
     const navItems = [
         { name: '对话', href: '/chat', icon: MessageSquare },
@@ -50,7 +75,50 @@ export default function Navbar() {
                     })}
                 </div>
 
-                <div className="w-8" />
+                <div className="relative">
+                    <button
+                        type="button"
+                        className="inline-flex h-9 max-w-[132px] items-center gap-2 rounded-full border border-gray-200 bg-white px-2 text-sm text-gray-700 transition hover:border-gray-300 hover:bg-gray-50"
+                        onClick={() => setIsProfileOpen(value => !value)}
+                        aria-label="个人信息"
+                        aria-expanded={isProfileOpen}
+                    >
+                        {user?.avatarUrl ? (
+                            <img src={user.avatarUrl} alt="头像" className="h-6 w-6 rounded-full object-cover" />
+                        ) : (
+                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gray-900 text-xs font-semibold text-white">
+                                {user ? avatarText : <UserRound size={14} />}
+                            </span>
+                        )}
+                        <span className="hidden truncate text-xs font-medium sm:block">{displayName}</span>
+                    </button>
+                    {isProfileOpen ? (
+                        <>
+                            <button className="fixed inset-0 z-40 cursor-default" aria-label="关闭个人信息" onClick={() => setIsProfileOpen(false)} />
+                            <div className="absolute right-0 z-50 mt-2 w-64 rounded-xl border border-gray-200 bg-white p-3 shadow-xl">
+                                <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gray-900 text-sm font-semibold text-white">{avatarText}</span>
+                                    <div className="min-w-0">
+                                        <p className="truncate text-sm font-medium text-gray-900">{displayName}</p>
+                                        <p className="truncate text-xs text-gray-500">{user?.email || '当前以访客身份使用'}</p>
+                                    </div>
+                                </div>
+                                {user ? (
+                                    <button
+                                        type="button"
+                                        onClick={logout}
+                                        className="mt-3 flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-xs text-gray-600 transition hover:bg-gray-50 hover:text-gray-900"
+                                    >
+                                        <LogOut size={14} />
+                                        退出登录
+                                    </button>
+                                ) : (
+                                    <p className="mt-3 px-2 text-xs leading-relaxed text-gray-500">登录后可同步和管理你的对话记录。</p>
+                                )}
+                            </div>
+                        </>
+                    ) : null}
+                </div>
             </div>
         </nav>
     );

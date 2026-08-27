@@ -64,9 +64,9 @@ export function Sidebar({ stageConfig, summary, isSummarizing, currentStage, can
     };
 
     return (
-        <aside className="hidden lg:flex flex-col gap-4 py-4">
+        <aside className="fixed right-4 top-20 bottom-4 z-30 hidden w-80 flex-col gap-4 overflow-y-auto pr-1 xl:flex">
             {/* 阶段进度 - 更清晰的步骤指示器 */}
-            <div className="border border-gray-100 bg-white rounded-2xl p-4 sticky top-4">
+            <div className="border border-gray-100 bg-white rounded-2xl p-4">
                 <div className="text-sm font-semibold text-gray-900 mb-4">对话进度</div>
 
                 <div className="space-y-3">

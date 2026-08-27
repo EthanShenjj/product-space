@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { History, MessageSquare, Trash2, X, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
+import { BookOpen, History, MessageSquare, PenSquare, Plus, Trash2 } from 'lucide-react';
 
 interface ConversationItem {
   id: string;
@@ -15,10 +16,12 @@ interface ConversationItem {
 }
 
 interface HistoryPanelProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSelectConversation: (sessionId: string) => void;
-  currentSessionId?: string;
+    isOpen: boolean;
+    onClose?: () => void;
+    onSelectConversation: (sessionId: string) => void;
+    onNewConversation?: () => void;
+    currentSessionId?: string;
+    refreshKey?: string | number;
 }
 
 const stageLabels: Record<string, string> = {
@@ -31,7 +34,9 @@ export default function HistoryPanel({
   isOpen,
   onClose,
   onSelectConversation,
+  onNewConversation,
   currentSessionId,
+  refreshKey,
 }: HistoryPanelProps) {
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -41,7 +46,7 @@ export default function HistoryPanel({
     if (isOpen) {
       loadHistory();
     }
-  }, [isOpen]);
+  }, [isOpen, refreshKey]);
 
   const loadHistory = async () => {
     setIsLoading(true);
@@ -97,106 +102,81 @@ export default function HistoryPanel({
   if (!isOpen) return null;
 
   return (
-    <>
-      {/* 遮罩层 */}
-      <div
-        className="fixed inset-0 bg-black/20 z-40 lg:hidden"
-        onClick={onClose}
-      />
+    <aside className="fixed left-0 top-16 bottom-0 z-30 hidden w-80 flex-col border-r border-gray-100 bg-[#fbfbfb] xl:flex">
+      <div className="space-y-1 px-3 py-4">
+        <button
+          type="button"
+          onClick={() => onNewConversation ? onNewConversation() : window.location.reload()}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-gray-800 transition hover:bg-gray-100"
+        >
+          <PenSquare size={18} />
+          新对话
+          <Plus size={16} className="ml-auto text-gray-400" />
+        </button>
+        <Link
+          href="/explore"
+          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-600 transition hover:bg-gray-100 hover:text-gray-900"
+        >
+          <BookOpen size={18} />
+          灵感火花
+        </Link>
+      </div>
 
-      {/* 侧边栏 */}
-      <div className="fixed left-0 top-0 h-full w-80 bg-white shadow-xl z-50 flex flex-col">
-        {/* 头部 */}
-        <div className="flex items-center justify-between px-4 py-4 border-b">
-          <div className="flex items-center gap-2">
-            <History className="w-5 h-5" />
-            <span className="font-medium">历史对话</span>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+      <div className="mx-3 border-t border-gray-200" />
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 py-4">
+        <div className="mb-2 flex items-center gap-2 px-3 text-xs font-medium text-gray-400">
+          <History size={14} />
+          最近对话
         </div>
-
-        {/* 列表 */}
-        <div className="flex-1 overflow-y-auto">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="w-6 h-6 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
-            </div>
-          ) : conversations.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-              <MessageSquare className="w-12 h-12 mb-3 opacity-50" />
-              <p>暂无历史对话</p>
-              <p className="text-sm mt-1">开始新对话后会自动保存</p>
-            </div>
-          ) : (
-            <div className="py-2">
-              {conversations.map(conv => (
+        {isLoading ? (
+          <div className="flex flex-1 items-center justify-center py-12">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-700" />
+          </div>
+        ) : conversations.length === 0 ? (
+          <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center text-gray-400">
+            <MessageSquare className="mb-3 h-8 w-8 opacity-50" />
+            <p className="text-sm">暂无已保存的对话</p>
+            <p className="mt-1 text-xs leading-relaxed">开始交流后，记录会自动出现在这里。</p>
+          </div>
+        ) : (
+          <div className="space-y-1">
+            {conversations.map(conv => {
+              const selected = currentSessionId === conv.sessionId;
+              return (
                 <div
                   key={conv.id}
                   onClick={() => {
                     onSelectConversation(conv.sessionId);
-                    onClose();
+                    onClose?.();
                   }}
-                  className={`group px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors ${
-                    currentSessionId === conv.sessionId ? 'bg-gray-100' : ''
+                  className={`group flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 transition ${
+                    selected ? 'bg-gray-200/70 text-gray-900' : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm text-gray-900 truncate">
-                        {conv.productTitle || conv.title}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">
-                          {stageLabels[conv.stage] || conv.stage}
-                        </span>
-                        <span className="text-xs text-gray-400">
-                          {conv.messageCount} 条消息
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-400 mt-1">
-                        {formatDate(conv.updatedAt)}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={(e) => handleDelete(conv.sessionId, e)}
-                        disabled={deletingId === conv.sessionId}
-                        className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500 transition-colors"
-                      >
-                        {deletingId === conv.sessionId ? (
-                          <div className="w-4 h-4 border-2 border-gray-300 border-t-red-500 rounded-full animate-spin" />
-                        ) : (
-                          <Trash2 className="w-4 h-4" />
-                        )}
-                      </button>
-                      <ChevronRight className="w-4 h-4 text-gray-300" />
-                    </div>
+                  <MessageSquare size={15} className={selected ? 'shrink-0 text-gray-700' : 'shrink-0 text-gray-400'} />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{conv.productTitle || conv.title || '未命名对话'}</p>
+                    <p className="mt-0.5 truncate text-[11px] text-gray-400">
+                      {stageLabels[conv.stage] || '信息收集'} · {conv.messageCount} 条消息 · {formatDate(conv.updatedAt)}
+                    </p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={(event) => handleDelete(conv.sessionId, event)}
+                    disabled={deletingId === conv.sessionId}
+                    className="rounded p-1 text-gray-300 opacity-0 transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100 focus:opacity-100"
+                    aria-label={`删除 ${conv.productTitle || conv.title || '对话'}`}
+                  >
+                    {deletingId === conv.sessionId ? (
+                      <span className="block h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-300 border-t-red-500" />
+                    ) : <Trash2 size={14} />}
+                  </button>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* 底部：新建对话按钮 */}
-        <div className="p-4 border-t">
-          <button
-            onClick={() => {
-              // 清除当前 session，开始新对话
-              sessionStorage.removeItem('track_session_id');
-              window.location.reload();
-            }}
-            className="w-full py-2.5 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition-colors"
-          >
-            开始新对话
-          </button>
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
-    </>
+    </aside>
   );
 }

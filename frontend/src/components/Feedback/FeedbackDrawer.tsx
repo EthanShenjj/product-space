@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { PointerEvent, useRef, useState } from 'react';
 import { Sparkles, X } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -10,6 +10,43 @@ export default function FeedbackDrawer() {
     const [contact, setContact] = useState('');
     const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
     const [message, setMessage] = useState('');
+    const [desktopPosition, setDesktopPosition] = useState<{ x: number; y: number } | null>(null);
+    const dragRef = useRef<{ startX: number; startY: number; originX: number; originY: number; moved: boolean } | null>(null);
+    const skipOpenRef = useRef(false);
+
+    const startDrag = (event: PointerEvent<HTMLButtonElement>) => {
+        const rect = event.currentTarget.getBoundingClientRect();
+        dragRef.current = {
+            startX: event.clientX,
+            startY: event.clientY,
+            originX: rect.left,
+            originY: rect.top,
+            moved: false,
+        };
+        event.currentTarget.setPointerCapture(event.pointerId);
+    };
+
+    const moveDrag = (event: PointerEvent<HTMLButtonElement>) => {
+        const drag = dragRef.current;
+        if (!drag) return;
+        const deltaX = event.clientX - drag.startX;
+        const deltaY = event.clientY - drag.startY;
+        if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) drag.moved = true;
+        const rect = event.currentTarget.getBoundingClientRect();
+        setDesktopPosition({
+            x: Math.max(8, Math.min(window.innerWidth - rect.width - 8, drag.originX + deltaX)),
+            y: Math.max(72, Math.min(window.innerHeight - rect.height - 8, drag.originY + deltaY)),
+        });
+    };
+
+    const endDrag = (event: PointerEvent<HTMLButtonElement>) => {
+        const drag = dragRef.current;
+        if (drag?.moved) skipOpenRef.current = true;
+        dragRef.current = null;
+        if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+            event.currentTarget.releasePointerCapture(event.pointerId);
+        }
+    };
 
     const submit = async () => {
         if (!content.trim()) {
@@ -43,8 +80,23 @@ export default function FeedbackDrawer() {
         <>
             <button
                 type="button"
-                onClick={() => setOpen(true)}
-                className="fixed right-3 top-1/2 -translate-y-1/2 z-40 hidden md:flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:border-gray-400"
+                onPointerDown={startDrag}
+                onPointerMove={moveDrag}
+                onPointerUp={endDrag}
+                onPointerCancel={endDrag}
+                onClick={() => {
+                    if (skipOpenRef.current) {
+                        skipOpenRef.current = false;
+                        return;
+                    }
+                    setOpen(true);
+                }}
+                style={desktopPosition ? { left: desktopPosition.x, top: desktopPosition.y } : undefined}
+                className={clsx(
+                    'fixed z-40 hidden cursor-grab touch-none select-none items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:border-gray-400 active:cursor-grabbing md:flex',
+                    desktopPosition ? '' : 'right-3 top-1/2 -translate-y-1/2'
+                )}
+                title="点击提交反馈，拖动调整位置"
             >
                 <Sparkles size={16} />
                 反馈

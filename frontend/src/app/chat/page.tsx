@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useChat } from './useChat';
 import { PhaseIndicator, MessageList, ChatInput, Sidebar } from './components';
+import HistoryPanel from '@/components/Chat/HistoryPanel';
 
 function ChatContent() {
     const {
@@ -20,11 +21,14 @@ function ChatContent() {
         minDeepTurns,
         models,
         selectedModelId,
+        currentSessionId,
         selectModel,
         addModel,
         deleteModel,
         handleSend,
         handleQuickSend,
+        loadConversation,
+        startNewConversation,
     } = useChat();
 
     const prevStageRef = useRef(currentStage);
@@ -60,8 +64,8 @@ function ChatContent() {
 
     return (
         <div className="h-[calc(100dvh-64px)] min-h-[calc(100dvh-64px)] w-full relative">
-            <div className="grid h-full max-w-6xl mx-auto w-full lg:grid-cols-[1fr_320px] gap-6 px-4">
-                <div className="flex flex-col min-h-0">
+            <div className="h-full w-full xl:pl-[336px] xl:pr-[352px]">
+                <div className="mx-auto flex h-full w-full max-w-3xl flex-col min-h-0 px-4">
                     <PhaseIndicator currentStage={currentStage} />
                     <MessageList
                         messages={messages}
@@ -85,16 +89,23 @@ function ChatContent() {
                         onDeleteModel={deleteModel}
                     />
                 </div>
-                <Sidebar
-                    stageConfig={stageConfig}
-                    summary={summary}
-                    isSummarizing={isSummarizing}
-                    currentStage={currentStage}
-                    canStartAnalysis={currentStage === 'analysis'}
-                    deepTurns={deepTurns}
-                    minDeepTurns={minDeepTurns}
-                />
             </div>
+            <Sidebar
+                stageConfig={stageConfig}
+                summary={summary}
+                isSummarizing={isSummarizing}
+                currentStage={currentStage}
+                canStartAnalysis={currentStage === 'analysis'}
+                deepTurns={deepTurns}
+                minDeepTurns={minDeepTurns}
+            />
+            <HistoryPanel
+                isOpen
+                currentSessionId={currentSessionId}
+                refreshKey={`${currentSessionId}-${messages.length}`}
+                onSelectConversation={loadConversation}
+                onNewConversation={startNewConversation}
+            />
 
             {toast ? (
                 <div className="fixed left-1/2 top-20 z-50 -translate-x-1/2 rounded-full bg-black text-white px-4 py-2 text-xs shadow-lg">

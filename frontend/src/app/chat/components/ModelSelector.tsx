@@ -22,6 +22,12 @@ const emptyModel: EditableModelConfig = {
 
 const providerPresets = [
     { label: 'OpenAI', baseUrl: 'https://api.openai.com/v1/chat/completions' },
+    {
+        label: 'Gemini',
+        name: 'Gemini 3.7 Flash',
+        baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+        model: 'gemini-3.7-flash',
+    },
     { label: 'OpenRouter', baseUrl: 'https://openrouter.ai/api/v1/chat/completions' },
     { label: 'DeepSeek', baseUrl: 'https://api.deepseek.com/v1/chat/completions' },
 ];
@@ -234,7 +240,15 @@ export function ModelSelector({
                                             <button
                                                 key={preset.label}
                                                 type="button"
-                                                onClick={() => updateField('baseUrl', preset.baseUrl)}
+                                                onClick={() => {
+                                                    setForm(prev => ({
+                                                        ...prev,
+                                                        baseUrl: preset.baseUrl,
+                                                        name: preset.name || prev.name,
+                                                        model: preset.model || prev.model,
+                                                    }));
+                                                    setError('');
+                                                }}
                                                 className={`rounded-full border px-3 py-1.5 text-xs transition ${
                                                     form.baseUrl === preset.baseUrl
                                                         ? 'border-gray-900 bg-gray-900 text-white'
