@@ -2,6 +2,19 @@ export interface Message {
     id: string;
     role: 'user' | 'assistant';
     content: string;
+    execution?: {
+        provider?: string;
+        status: 'running' | 'completed';
+        steps: ExecutionStep[];
+    };
+}
+
+export interface ExecutionStep {
+    id: string;
+    kind: 'reasoning' | 'tool';
+    label: string;
+    status: 'running' | 'completed';
+    detail?: string;
 }
 
 export interface Summary {

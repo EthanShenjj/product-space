@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Message, Summary, Stage, StageConfig } from './types';
+import { ExecutionStep, Message, Summary, Stage, StageConfig } from './types';
 import { useModelSettings } from './useModelSettings';
 import { WELCOME_MESSAGE } from '@/data/prompts';
 import {
@@ -34,6 +34,12 @@ const getInviteCode = (): string => {
     if (typeof window === 'undefined') return '';
     return localStorage.getItem('invite_code') || '';
 };
+
+type ChatSseEvent =
+    | { type: 'meta'; provider: string }
+    | { type: 'text'; delta: string }
+    | { type: 'step'; id: string; kind: ExecutionStep['kind']; label: string; status: ExecutionStep['status']; detail?: string }
+    | { type: 'done' };
 
 // 保存对话到数据库
 const saveConversation = async (
@@ -619,7 +625,12 @@ export function useChat() {
         setIsThinking(true);
 
         const assistantId = (Date.now() + 1).toString();
-        setMessages(prev => [...prev, { id: assistantId, role: 'assistant', content: '' }]);
+        setMessages(prev => [...prev, {
+            id: assistantId,
+            role: 'assistant',
+            content: '',
+            execution: { status: 'running', steps: [] },
+        }]);
 
         try {
             const response = await fetch('/api/chat', {
@@ -663,18 +674,78 @@ export function useChat() {
             const decoder = new TextDecoder();
             let done = false;
             let accumulated = '';
+            let buffer = '';
+
+            const applyEvent = (event: ChatSseEvent) => {
+                if (event.type === 'text') {
+                    setIsThinking(false);
+                    accumulated += event.delta;
+                    setMessages(prev =>
+                        prev.map(m => (m.id === assistantId ? { ...m, content: accumulated } : m))
+                    );
+                    return;
+                }
+                if (event.type === 'meta') {
+                    setIsThinking(false);
+                    setMessages(prev => prev.map(m => (
+                        m.id === assistantId
+                            ? { ...m, execution: { status: 'running', steps: m.execution?.steps || [], provider: event.provider } }
+                            : m
+                    )));
+                    return;
+                }
+                if (event.type === 'step') {
+                    setIsThinking(false);
+                    setMessages(prev => prev.map(m => {
+                        if (m.id !== assistantId) return m;
+                        const execution = m.execution || { status: 'running' as const, steps: [] };
+                        const step: ExecutionStep = {
+                            id: event.id,
+                            kind: event.kind,
+                            label: event.label,
+                            status: event.status,
+                            detail: event.detail,
+                        };
+                        const existingIndex = execution.steps.findIndex(item => item.id === step.id);
+                        const steps = existingIndex === -1
+                            ? [...execution.steps, step]
+                            : execution.steps.map((item, index) => index === existingIndex ? { ...item, ...step } : item);
+                        return { ...m, execution: { ...execution, steps } };
+                    }));
+                    return;
+                }
+                if (event.type === 'done') {
+                    setMessages(prev => prev.map(m => (
+                        m.id === assistantId && m.execution
+                            ? { ...m, execution: { ...m.execution, status: 'completed' } }
+                            : m
+                    )));
+                }
+            };
+
+            const processBuffer = (flush = false) => {
+                const frames = buffer.split('\n\n');
+                buffer = flush ? '' : frames.pop() || '';
+                for (const frame of frames) {
+                    const dataLine = frame.split('\n').find(line => line.startsWith('data: '));
+                    if (!dataLine) continue;
+                    try {
+                        applyEvent(JSON.parse(dataLine.slice(6)) as ChatSseEvent);
+                    } catch {
+                        // Ignore malformed stream frames and keep the reply streaming.
+                    }
+                }
+            };
 
             while (!done) {
                 const { value, done: doneReading } = await reader.read();
                 done = doneReading;
                 const chunk = decoder.decode(value || new Uint8Array(), { stream: !doneReading });
                 if (!chunk) continue;
-                setIsThinking(false);
-                accumulated += chunk;
-                setMessages(prev =>
-                    prev.map(m => (m.id === assistantId ? { ...m, content: accumulated } : m))
-                );
+                buffer += chunk;
+                processBuffer(doneReading);
             }
+            processBuffer(true);
             const finalMessages = currentMessages.concat({
                 id: assistantId,
                 role: 'assistant',

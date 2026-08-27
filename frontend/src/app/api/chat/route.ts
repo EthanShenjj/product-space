@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { createProductAdvisor } from '@/server/agents/definitions';
 import { streamWithFallback } from '@/server/agents/runtime';
 import { getConversationSession } from '@/server/agents/session';
-import { encodeTextStream } from '@/server/agents/stream';
+import { encodeAgentEventStream } from '@/server/agents/stream';
 import type { ChatMessage, CustomModelConfig } from '@/server/agents/types';
 
 export const runtime = 'nodejs';
@@ -32,10 +32,11 @@ export async function POST(req: NextRequest) {
     });
 
     console.log(`[Chat] streaming from ${provider.name}`);
-    return new Response(encodeTextStream(result.toTextStream()), {
+    return new Response(encodeAgentEventStream(result, provider.name), {
       headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
+        'Content-Type': 'text/event-stream; charset=utf-8',
         'Cache-Control': 'no-cache, no-transform',
+        Connection: 'keep-alive',
       },
     });
   } catch (error) {

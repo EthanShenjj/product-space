@@ -1,6 +1,6 @@
 'use client';
 
-import { ThumbsUp, ThumbsDown, Copy, Check, User } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Copy, Check, User, BrainCircuit, Wrench, ChevronDown, LoaderCircle } from 'lucide-react';
 import clsx from 'clsx';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -20,6 +20,7 @@ export function ChatMessage({ message, currentStage }: ChatMessageProps) {
     const [comment, setComment] = useState('');
     const [showCommentBox, setShowCommentBox] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [showExecution, setShowExecution] = useState(message.execution?.status === 'running');
 
     const sendFeedback = (vote: 'up' | 'down') => {
         if (feedback === vote) return;
@@ -129,6 +130,42 @@ export function ChatMessage({ message, currentStage }: ChatMessageProps) {
                 </div>
                 {!isUser ? (
                     <div className="mt-2 space-y-2">
+                        {message.execution ? (
+                            <div className="rounded-xl border border-gray-200 bg-white/70 text-xs text-gray-600 overflow-hidden">
+                                <button
+                                    type="button"
+                                    className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-gray-50"
+                                    onClick={() => setShowExecution((value) => !value)}
+                                >
+                                    {message.execution.status === 'running'
+                                        ? <LoaderCircle size={14} className="animate-spin text-gray-500" />
+                                        : <BrainCircuit size={14} className="text-gray-500" />}
+                                    <span className="font-medium">{message.execution.status === 'running' ? '正在执行' : '执行过程'}</span>
+                                    {message.execution.provider ? <span className="text-gray-400">· {message.execution.provider}</span> : null}
+                                    <ChevronDown size={14} className={clsx('ml-auto transition-transform', showExecution ? 'rotate-180' : '')} />
+                                </button>
+                                {showExecution ? (
+                                    <ol className="space-y-2 border-t border-gray-100 px-3 py-3">
+                                        {message.execution.steps.length ? message.execution.steps.map((step) => (
+                                            <li key={step.id} className="flex items-start gap-2">
+                                                {step.kind === 'tool'
+                                                    ? <Wrench size={13} className="mt-0.5 shrink-0 text-indigo-500" />
+                                                    : <BrainCircuit size={13} className="mt-0.5 shrink-0 text-amber-500" />}
+                                                <div className="min-w-0">
+                                                    <div className="flex items-center gap-2">
+                                                        <span>{step.label}</span>
+                                                        {step.status === 'running' ? <LoaderCircle size={12} className="animate-spin text-gray-400" /> : <Check size={12} className="text-green-600" />}
+                                                    </div>
+                                                    {step.detail ? <p className="mt-0.5 break-words text-gray-400">{step.detail}</p> : null}
+                                                </div>
+                                            </li>
+                                        )) : (
+                                            <li className="flex items-center gap-2 text-gray-400"><LoaderCircle size={12} className="animate-spin" /> 正在开始处理…</li>
+                                        )}
+                                    </ol>
+                                ) : null}
+                            </div>
+                        ) : null}
                         <div className="flex items-center gap-2 text-gray-400">
                             <button
                                 type="button"
