@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
-import { LogOut, MessageSquare, Library, Sparkles, UserRound } from 'lucide-react';
+import { LogOut, MessageSquare, Library, BookOpenText, Sparkles, UserRound } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface CurrentUser {
@@ -35,6 +35,7 @@ export default function Navbar() {
 
     const navItems = [
         { name: '对话', href: '/chat', icon: MessageSquare },
+        { name: '知识库', href: '/knowledge', icon: BookOpenText },
         { name: '探索', href: '/explore', icon: Library },
     ];
 

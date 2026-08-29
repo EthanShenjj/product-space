@@ -9,7 +9,15 @@ export async function POST(req: NextRequest) {
     const query = typeof body.query === 'string' ? body.query.trim() : '';
     if (!query) return NextResponse.json({ context: '', sources: [] });
     const { context, results } = await getKnowledgeContext(query, typeof body.k === 'number' ? body.k : 5);
-    return NextResponse.json({ context, sources: results.map((result) => result.source) });
+    return NextResponse.json({
+      context,
+      sources: results.map((result) => result.source),
+      results: results.map((result) => ({
+        source: result.source,
+        content: result.content.slice(0, 1_200),
+        score: result.score,
+      })),
+    });
   } catch (error) {
     console.error('[Knowledge] failed:', error instanceof Error ? error.message : 'Unknown error');
     return NextResponse.json({ context: '', sources: [] });
