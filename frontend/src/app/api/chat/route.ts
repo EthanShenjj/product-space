@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
 
     const session = await getConversationSession(typeof body.sessionId === 'string' ? body.sessionId : undefined, messages.slice(0, -1));
     const { result, provider } = await streamWithFallback(createProductAdvisor, lastMessage.content, {
+      pageContext: typeof body.pageContext === 'string' ? body.pageContext.slice(0, 4_000) : undefined,
       customModel: isModelConfig(body.modelConfig) ? body.modelConfig : undefined,
       session,
       workflowName: 'product-chat',

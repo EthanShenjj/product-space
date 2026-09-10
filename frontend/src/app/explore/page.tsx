@@ -8,6 +8,7 @@ import cardsData from '@/data/cards.json';
 import autoCardsData from '@/data/cards.auto.json';
 import InsightCard, { CardData } from '@/components/Cards/InsightCard';
 import { trackCardClick } from '@/lib/tracking';
+import { type AgentPanelConfig, useAgentPanel } from '@/components/AgentPanelProvider';
 
 export default function ExplorePage() {
     const [cmsCards, setCmsCards] = useState<CardData[]>([]);
@@ -52,8 +53,17 @@ export default function ExplorePage() {
         return combinedCards.filter(card => card.category === activeCategory);
     }, [activeCategory, combinedCards]);
 
+    const agentPanel = useMemo<AgentPanelConfig>(() => ({
+        title: '灵感探索助理',
+        description: '把一条灵感转成可验证的产品假设，而不止停留在收藏。',
+        pageContext: `用户正在浏览 ProductThink 灵感火花页面。${activeCard ? `当前阅读的灵感是《${activeCard.title}》，分类为「${activeCard.category}」，内容摘要：${activeCard.content}` : '用户尚未打开具体灵感。'} 帮用户将灵感联系到真实用户、场景、假设与下一步验证。`,
+        prompts: activeCard ? [`把《${activeCard.title}》转成一个产品假设`, '这条灵感最适合解决什么用户问题？', '如何用一周验证这条灵感是否成立？'] : ['帮我把一个产品灵感变成可验证假设', '这批灵感里适合冷启动的思路是什么？', '我想找一个能改善用户留存的灵感方向'],
+    }), [activeCard]);
+    useAgentPanel(agentPanel);
+
     return (
-        <div className="max-w-5xl mx-auto px-4 py-8 w-full">
+        <div className="agent-page-layout">
+        <div className="explore-page-content mx-auto w-full max-w-5xl px-4 py-8">
             <header className="mb-6 text-center">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">灵感火花</h1>
                 <p className="text-gray-500 max-w-xl mx-auto">
@@ -80,7 +90,7 @@ export default function ExplorePage() {
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="explore-card-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredCards.map((card) => (
                     <InsightCard
                         key={card.id}
@@ -151,6 +161,7 @@ export default function ExplorePage() {
                     </div>
                 </div>
             ) : null}
+        </div>
         </div>
     );
 }

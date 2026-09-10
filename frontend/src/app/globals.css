@@ -30,3 +30,54 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* A page with an open Agent gets a real, independent content column rather
+   than padding inside a full-width layout. This keeps the two surfaces from
+   overlapping while the user resizes the Agent panel. */
+.agent-page-layout {
+  width: 100%;
+  transition: width 300ms ease, margin 300ms ease;
+}
+
+@media (min-width: 1024px) {
+  html[data-agent-panel-open='true'] .agent-page-layout {
+    width: calc(100% - var(--agent-panel-width));
+    margin-right: var(--agent-panel-width);
+  }
+
+  html[data-agent-panel-open='true'] .app-navbar {
+    right: var(--agent-panel-width);
+    transition: right 300ms ease;
+  }
+}
+
+.knowledge-page-content,
+.explore-page-content {
+  container-type: inline-size;
+}
+
+@container (max-width: 760px) {
+  .knowledge-page-header,
+  .knowledge-search-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .knowledge-page-stats {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .knowledge-semantic-grid,
+  .knowledge-document-grid,
+  .explore-card-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@container (min-width: 761px) and (max-width: 1100px) {
+  .knowledge-document-grid,
+  .explore-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
