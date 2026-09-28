@@ -18,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+      <body className="antialiased bg-paper text-ink min-h-screen flex flex-col">
         <AgentPanelProvider>
           <Navbar />
           <Suspense fallback={null}>

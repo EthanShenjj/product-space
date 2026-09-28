@@ -1,34 +1,247 @@
 @import "tailwindcss";
 
+/* ============================================================
+   ProductThink Design Tokens — spec: /design.md
+   纸感编辑风:暖灰纸底 + 墨色文字 + 发丝线 + 药丸形 + 柔和投影。
+   ============================================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
   color-scheme: light;
-  /* Override Tailwind v4 OKLCH palette to hex for html2canvas compatibility */
-  --color-gray-50: #f9fafb;
-  --color-gray-100: #f3f4f6;
-  --color-gray-200: #e5e7eb;
-  --color-gray-300: #d1d5db;
-  --color-gray-400: #9ca3af;
-  --color-gray-500: #6b7280;
-  --color-gray-600: #4b5563;
-  --color-gray-700: #374151;
-  --color-gray-800: #1f2937;
-  --color-gray-900: #111827;
-  --color-gray-950: #030712;
+
+  /* Surfaces */
+  --paper: #ececea;
+  --surface: #fafaf8;
+  --surface-raised: #ffffff;
+  --surface-sunken: #f1f1ee;
+
+  /* Ink ramp */
+  --ink: #1c1c1a;
+  --ink-secondary: #56554f;
+  --ink-muted: #8b8a82;
+  --ink-faint: #b9b8b0;
+  --hairline: #e4e3dc;
+  --hairline-strong: #d3d2ca;
+
+  /* Semantic (green is the only standing accent) */
+  --score: #3e8b50;
+  --score-bg: #e2f1e2;
+  --warn: #a87b22;
+  --warn-bg: #f6eedb;
+  --danger: #b9523f;
+  --danger-bg: #f8e7e2;
+  --info: #44688c;
+  --info-bg: #e6edf4;
+
+  /* Sticker accents — marketing/illustration only, never UI chrome */
+  --sticker-cyan: #37b3d4;
+  --sticker-pink: #ee7ebe;
+  --sticker-yellow: #f5ce4b;
+  --sticker-orange: #eb8a2e;
+
+  /* Segment bar middle tone (related/on-off timelines) */
+  --segment-mid: #8e8d85;
+
+  /* Shadows */
+  --shadow-card: 0 1px 2px rgb(28 28 26 / 0.04), 0 20px 44px -28px rgb(28 28 26 / 0.28);
+  --shadow-float: 0 2px 6px rgb(28 28 26 / 0.06), 0 28px 64px -28px rgb(28 28 26 / 0.38);
+
+  /* Legacy Tailwind gray ramp kept as hex for html2canvas compat,
+     re-tinted warm to sit on the paper background */
+  --color-gray-50: #f7f7f5;
+  --color-gray-100: #f1f1ee;
+  --color-gray-200: #e4e3dc;
+  --color-gray-300: #d3d2ca;
+  --color-gray-400: #b9b8b0;
+  --color-gray-500: #8b8a82;
+  --color-gray-600: #56554f;
+  --color-gray-700: #3d3c37;
+  --color-gray-800: #2b2a27;
+  --color-gray-900: #1c1c1a;
+  --color-gray-950: #121210;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: Arial, Helvetica, sans-serif;
-  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+
+  --color-ink: var(--ink);
+  --color-ink-secondary: var(--ink-secondary);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+
+  --color-score: var(--score);
+  --color-score-bg: var(--score-bg);
+  --color-warn: var(--warn);
+  --color-warn-bg: var(--warn-bg);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+
+  --color-sticker-cyan: var(--sticker-cyan);
+  --color-sticker-pink: var(--sticker-pink);
+  --color-sticker-yellow: var(--sticker-yellow);
+  --color-sticker-orange: var(--sticker-orange);
+  --color-segment-mid: var(--segment-mid);
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+  --font-serif: Georgia, "Times New Roman", "Noto Serif SC", "Songti SC", serif;
+
+  --shadow-card: var(--shadow-card);
+  --shadow-float: var(--shadow-float);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+/* ------------------------------------------------------------
+   Base component classes (see design.md §5)
+   ------------------------------------------------------------ */
+
+@layer components {
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border-radius: 1rem;
+    box-shadow: var(--shadow-card);
+  }
+
+  .card-outline {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 1rem;
+  }
+
+  /* Buttons — pill shaped per spec */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 9999px;
+    font-weight: 500;
+    transition: background-color 150ms ease, opacity 150ms ease;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--ink) 85%, var(--paper));
+  }
+  .btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: var(--surface-raised);
+    color: var(--ink);
+    border: 1px solid var(--hairline);
+    border-radius: 9999px;
+    font-weight: 500;
+    transition: border-color 150ms ease, background-color 150ms ease;
+  }
+  .btn-secondary:hover:not(:disabled) {
+    border-color: var(--hairline-strong);
+    background: var(--surface);
+  }
+  .btn-secondary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: var(--ink-secondary);
+    border-radius: 9999px;
+    transition: color 150ms ease;
+  }
+  .btn-ghost:hover:not(:disabled) {
+    color: var(--ink);
+  }
+
+  /* Micro-label: uppercase tracking caption used for all group/stat labels */
+  .micro-label {
+    font-size: 11px;
+    line-height: 1.2;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  /* Inputs */
+  .input-field {
+    width: 100%;
+    background: var(--surface-sunken);
+    border: 1px solid transparent;
+    border-radius: 0.75rem;
+    color: var(--ink);
+    transition: border-color 150ms ease, background-color 150ms ease;
+  }
+  .input-field::placeholder {
+    color: var(--ink-faint);
+  }
+  .input-field:focus {
+    outline: none;
+    background: var(--surface-raised);
+    border-color: color-mix(in srgb, var(--ink) 30%, transparent);
+  }
+  .input-pill {
+    border-radius: 9999px;
+  }
+
+  /* Metric bars (thin spec bars) */
+  .metric-track {
+    height: 6px;
+    border-radius: 9999px;
+    background: var(--hairline);
+    overflow: hidden;
+  }
+  .metric-fill {
+    height: 100%;
+    border-radius: 9999px;
+    background: var(--ink);
+    transition: width 500ms ease;
+  }
+
+  /* Underlined text link ("Hide every window" style) */
+  .u-link {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 150ms ease;
+  }
+  .u-link:hover {
+    color: var(--ink);
+  }
+
+  /* Category/eyebrow tag on cards */
+  .tag-soft {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    background: var(--surface-sunken);
+    color: var(--ink-secondary);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
 }
 
 /* A page with an open Agent gets a real, independent content column rather

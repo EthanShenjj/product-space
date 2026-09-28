@@ -322,22 +322,22 @@ export default function AnalyticsPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
-          <h1 className="text-2xl font-bold mb-6 text-center">数据分析后台</h1>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="card p-8 w-full max-w-md">
+          <h1 className="font-serif text-2xl mb-6 text-center">数据分析后台</h1>
           <form onSubmit={handleLogin}>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="请输入管理密码"
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg mb-4"
+              className="input-field mb-4 px-4 py-3"
             />
-            {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+            {error && <p className="text-danger text-sm mb-4">{error}</p>}
             <button
               type="submit"
               disabled={isLoading || !password}
-              className="w-full bg-black text-white py-3 rounded-lg disabled:opacity-50"
+              className="btn-primary w-full py-3 text-sm"
             >
               {isLoading ? '验证中...' : '登录'}
             </button>
@@ -357,53 +357,53 @@ export default function AnalyticsPage() {
     ].filter(item => item.value);
 
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="min-h-screen p-6">
         <div className="max-w-4xl mx-auto">
           <button
             onClick={() => setSelectedConversation(null)}
-            className="flex items-center gap-2 text-gray-600 hover:text-black mb-6"
+            className="btn-ghost mb-6"
           >
             <ArrowLeft size={20} />
             返回列表
           </button>
-            <div className="bg-white rounded-2xl shadow-sm p-6">
+            <div className="card p-6">
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h2 className="text-xl font-bold">对话详情</h2>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <h2 className="font-serif text-xl">对话详情</h2>
+                  <p className="text-sm text-ink-muted mt-1">
                     会话 ID: {selectedConversation.session_id}
                   </p>
                   {selectedConversation.ip_address ? (
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-ink-muted">
                       IP: {selectedConversation.ip_address}
                     </p>
                   ) : null}
                   {selectedConversation.invite_code ? (
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-ink-muted">
                       邀请码: {selectedConversation.invite_code}
                     </p>
                   ) : null}
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-ink-muted">
                     创建时间: {new Date(selectedConversation.created_at).toLocaleString('zh-CN')}
                   </p>
                 </div>
               <div className="flex items-center gap-3">
                 <button
-                  className="flex items-center gap-1 text-sm text-gray-500 hover:text-yellow-600"
+                  className="flex items-center gap-1 text-sm text-ink-muted hover:text-warn"
                   onClick={() => toggleStar(selectedConversation.id, !selectedConversation.starred)}
                   disabled={starringId === selectedConversation.id}
                 >
                   <Star
                     size={16}
-                    className={selectedConversation.starred ? 'text-yellow-500' : 'text-gray-400'}
+                    className={selectedConversation.starred ? 'text-sticker-yellow' : 'text-ink-faint'}
                     fill={selectedConversation.starred ? 'currentColor' : 'none'}
                   />
                   {selectedConversation.starred ? '已收藏' : '收藏'}
                 </button>
                 <span className={`px-3 py-1 rounded-full text-sm ${
-                  selectedConversation.stage === 'analysis' ? 'bg-green-100 text-green-700' :
-                  selectedConversation.stage === 'deep' ? 'bg-blue-100 text-blue-700' :
-                  'bg-gray-100 text-gray-700'
+                  selectedConversation.stage === 'analysis' ? 'bg-score-bg text-score' :
+                  selectedConversation.stage === 'deep' ? 'bg-info-bg text-info' :
+                  'bg-surface-sunken text-ink-secondary'
                 }`}>
                   {selectedConversation.stage === 'analysis' ? '多视角分析' :
                    selectedConversation.stage === 'deep' ? '深度追问' : '信息收集'}
@@ -412,12 +412,12 @@ export default function AnalyticsPage() {
             </div>
               <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                 {summaryItems.length ? (
-                  <div className="bg-gray-50 rounded-xl p-4">
-                    <h3 className="text-sm font-semibold text-gray-700 mb-3">对话总结</h3>
-                    <div className="space-y-2 text-sm text-gray-600">
+                  <div className="bg-surface-sunken rounded-xl p-4">
+                    <h3 className="micro-label mb-3">对话总结</h3>
+                    <div className="space-y-2 text-sm text-ink-secondary">
                       {summaryItems.map(item => (
                         <div key={item.label}>
-                          <span className="font-medium text-gray-700">{item.label}：</span>
+                          <span className="font-medium text-ink">{item.label}：</span>
                           <span className="whitespace-pre-wrap">{item.value}</span>
                         </div>
                       ))}
@@ -428,7 +428,7 @@ export default function AnalyticsPage() {
                   <div
                     key={idx}
                     className={`p-4 rounded-lg ${
-                      msg.role === 'user' ? 'bg-black text-white ml-12' : 'bg-gray-100 mr-12'
+                      msg.role === 'user' ? 'bg-ink text-paper ml-12' : 'bg-surface-sunken mr-12'
                   }`}
                 >
                   <p className="text-xs opacity-60 mb-1">
@@ -445,40 +445,40 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-100">
+    <div className="min-h-screen">
+      <div className="bg-surface border-b border-hairline">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <Link href="/admin" className="text-gray-400 hover:text-black">
+            <Link href="/admin" className="text-ink-faint hover:text-ink">
               <ArrowLeft size={20} />
             </Link>
-            <h1 className="text-xl font-bold">数据分析</h1>
+            <h1 className="font-serif text-xl">数据分析</h1>
           </div>
           <div className="flex items-center gap-4">
             <button
               onClick={() => activeTab === 'overview' ? loadOverview() : loadConversations()}
               disabled={isLoading}
-              className="flex items-center gap-2 text-gray-600 hover:text-black"
+              className="btn-ghost"
             >
               <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
               刷新
             </button>
             <button
               onClick={handleLogout}
-              className="text-gray-400 hover:text-black"
+              className="text-ink-faint hover:text-ink"
             >
               退出
             </button>
           </div>
         </div>
       </div>
-      <div className="bg-white border-b border-gray-100">
+      <div className="bg-surface border-b border-hairline">
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex gap-6">
             <button
               onClick={() => setActiveTab('overview')}
               className={`py-4 border-b-2 ${
-                activeTab === 'overview' ? 'border-black text-black' : 'border-transparent text-gray-500'
+                activeTab === 'overview' ? 'border-ink text-ink font-semibold' : 'border-transparent text-ink-muted'
               }`}
             >
               数据概览
@@ -486,7 +486,7 @@ export default function AnalyticsPage() {
             <button
               onClick={() => setActiveTab('conversations')}
               className={`py-4 border-b-2 ${
-                activeTab === 'conversations' ? 'border-black text-black' : 'border-transparent text-gray-500'
+                activeTab === 'conversations' ? 'border-ink text-ink font-semibold' : 'border-transparent text-ink-muted'
               }`}
             >
               对话记录
@@ -495,44 +495,44 @@ export default function AnalyticsPage() {
         </div>
       </div>
       <div className="max-w-6xl mx-auto px-6 py-8">
-        {error && <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">{error}</div>}
+        {error && <div className="bg-danger-bg text-danger p-4 rounded-xl mb-6">{error}</div>}
         {activeTab === 'overview' && overview && (
           <div className="space-y-6">
             {/* AI API 用量监控 */}
-            <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100 rounded-2xl p-6">
+            <div className="card p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-8 h-8 bg-ink rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                   </div>
-                  <h2 className="text-lg font-semibold text-gray-900">AI API 用量</h2>
+                  <h2 className="font-serif text-lg">AI API 用量</h2>
                 </div>
                 <button
                   onClick={fetchUsage}
                   disabled={usageLoading}
-                  className="text-sm text-purple-600 hover:text-purple-800 disabled:opacity-50"
+                  className="text-sm text-ink-muted hover:text-ink disabled:opacity-50"
                 >
                   {usageLoading ? '刷新中...' : '刷新'}
                 </button>
               </div>
 
               {usageError && (
-                <div className="text-sm text-red-500 mb-4">{usageError}</div>
+                <div className="text-sm text-danger mb-4">{usageError}</div>
               )}
 
               {usageData ? (
                 <div className="space-y-4">
                   {/* 当前使用的提供商 */}
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-sm text-gray-600">当前主要提供商:</span>
+                    <span className="text-sm text-ink-secondary">当前主要提供商:</span>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       usageData.primaryProvider === 'Cloudsway'
-                        ? 'bg-blue-100 text-blue-700'
+                        ? 'bg-info-bg text-info'
                         : usageData.primaryProvider === 'VectorEngine'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-purple-100 text-purple-700'
+                          ? 'bg-score-bg text-score'
+                          : 'bg-surface-sunken text-ink-secondary'
                     }`}>
                       {usageData.primaryProvider}
                     </span>
@@ -540,89 +540,89 @@ export default function AnalyticsPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {/* Cloudsway 卡片 */}
-                    <div className={`bg-white rounded-xl p-4 border ${
+                    <div className={`bg-surface-raised rounded-xl p-4 border ${
                       usageData.primaryProvider === 'Cloudsway'
-                        ? 'border-blue-200 ring-2 ring-blue-100'
-                        : 'border-gray-200'
+                        ? 'border-ink/40'
+                        : 'border-hairline'
                     }`}>
                       <div className="flex items-center justify-between mb-2">
-                        <div className="text-sm font-semibold text-gray-900">Cloudsway</div>
+                        <div className="text-sm font-semibold text-ink">Cloudsway</div>
                         {usageData.primaryProvider === 'Cloudsway' && (
-                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">主用</span>
+                          <span className="text-xs bg-surface-sunken text-ink-secondary px-2 py-0.5 rounded-full">主用</span>
                         )}
                       </div>
                       {usageData.cloudsway?.configured ? (
                         <>
-                          <div className="text-xs text-gray-500">模型: {usageData.cloudsway.model}</div>
-                          <div className="text-xs text-green-600 mt-1">已配置</div>
+                          <div className="text-xs text-ink-muted">模型: {usageData.cloudsway.model}</div>
+                          <div className="text-xs text-score mt-1">已配置</div>
                         </>
                       ) : (
-                        <div className="text-xs text-gray-400">未配置</div>
+                        <div className="text-xs text-ink-faint">未配置</div>
                       )}
                     </div>
 
                     {/* VectorEngine 卡片 */}
-                    <div className={`bg-white rounded-xl p-4 border ${
+                    <div className={`bg-surface-raised rounded-xl p-4 border ${
                       usageData.primaryProvider === 'VectorEngine'
-                        ? 'border-green-200 ring-2 ring-green-100'
-                        : 'border-gray-200'
+                        ? 'border-ink/40'
+                        : 'border-hairline'
                     }`}>
                       <div className="flex items-center justify-between mb-2">
-                        <div className="text-sm font-semibold text-gray-900">VectorEngine</div>
+                        <div className="text-sm font-semibold text-ink">VectorEngine</div>
                         {usageData.primaryProvider === 'VectorEngine' && (
-                          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">主用</span>
+                          <span className="text-xs bg-score-bg text-score px-2 py-0.5 rounded-full">主用</span>
                         )}
                         {usageData.primaryProvider === 'Cloudsway' && usageData.vectorEngine?.configured && (
-                          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">备用</span>
+                          <span className="text-xs bg-paper text-ink-faint px-2 py-0.5 rounded-full">备用</span>
                         )}
                       </div>
                       {usageData.vectorEngine?.configured ? (
                         <>
-                          <div className="text-xs text-gray-500">模型: {usageData.vectorEngine.model}</div>
-                          <div className="text-xs text-green-600 mt-1">已配置</div>
+                          <div className="text-xs text-ink-muted">模型: {usageData.vectorEngine.model}</div>
+                          <div className="text-xs text-score mt-1">已配置</div>
                         </>
                       ) : (
-                        <div className="text-xs text-gray-400">未配置</div>
+                        <div className="text-xs text-ink-faint">未配置</div>
                       )}
                     </div>
 
                     {/* OpenRouter 卡片 */}
-                    <div className={`bg-white rounded-xl p-4 border ${
+                    <div className={`bg-surface-raised rounded-xl p-4 border ${
                       usageData.primaryProvider === 'OpenRouter'
-                        ? 'border-purple-200 ring-2 ring-purple-100'
-                        : 'border-gray-200'
+                        ? 'border-ink/40'
+                        : 'border-hairline'
                     }`}>
                       <div className="flex items-center justify-between mb-2">
-                        <div className="text-sm font-semibold text-gray-900">OpenRouter</div>
+                        <div className="text-sm font-semibold text-ink">OpenRouter</div>
                         {usageData.primaryProvider === 'OpenRouter' && (
-                          <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">主用</span>
+                          <span className="text-xs bg-surface-sunken text-ink-secondary px-2 py-0.5 rounded-full">主用</span>
                         )}
                         {(usageData.primaryProvider === 'VectorEngine' || usageData.primaryProvider === 'Cloudsway') && usageData.openRouter?.configured && (
-                          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">备用</span>
+                          <span className="text-xs bg-paper text-ink-faint px-2 py-0.5 rounded-full">备用</span>
                         )}
                       </div>
                       {usageData.openRouter?.configured ? (
                         usageData.openRouter.error ? (
-                          <div className="text-xs text-red-500">{usageData.openRouter.error}</div>
+                          <div className="text-xs text-danger">{usageData.openRouter.error}</div>
                         ) : (
                           <>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-ink-muted">
                               {usageData.openRouter.is_free_tier ? '免费版' : '付费版'}
                             </div>
-                            <div className="text-sm font-medium text-gray-900 mt-1">
+                            <div className="text-sm font-medium text-ink mt-1 tabular-nums">
                               已用: ${(usageData.openRouter.usage || 0).toFixed(4)}
                             </div>
                             {usageData.openRouter.limit && usageData.openRouter.limit > 0 && (
                               <div className="mt-2">
-                                <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                <div className="metric-track">
                                   <div
-                                    className="h-full bg-purple-500 rounded-full"
+                                    className="metric-fill"
                                     style={{
                                       width: `${Math.min(100, ((usageData.openRouter.usage || 0) / usageData.openRouter.limit) * 100)}%`
                                     }}
                                   />
                                 </div>
-                                <div className="text-xs text-gray-400 mt-1">
+                                <div className="text-xs text-ink-faint mt-1 tabular-nums">
                                   限额 ${usageData.openRouter.limit}
                                 </div>
                               </div>
@@ -630,245 +630,245 @@ export default function AnalyticsPage() {
                           </>
                         )
                       ) : (
-                        <div className="text-xs text-gray-400">未配置</div>
+                        <div className="text-xs text-ink-faint">未配置</div>
                       )}
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-ink-muted">
                   {usageLoading ? '加载中...' : '点击刷新获取用量数据'}
                 </div>
               )}
 
               {usageData && (
-                <div className="mt-4 text-xs text-gray-400">
+                <div className="mt-4 text-xs text-ink-faint">
                   更新时间: {new Date(usageData.timestamp).toLocaleString('zh-CN')}
                 </div>
               )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white p-6 rounded-2xl shadow-sm">
+              <div className="card p-6">
                 <div className="flex items-center gap-3 mb-2">
-                  <Activity className="text-blue-500" size={24} />
-                  <span className="text-gray-500">总事件数</span>
+                  <Activity className="text-ink" size={24} />
+                  <span className="text-sm text-ink-muted">总事件数</span>
                 </div>
-                <p className="text-3xl font-bold">{overview.totalEvents}</p>
+                <p className="text-3xl font-semibold text-ink tabular-nums">{overview.totalEvents}</p>
               </div>
-              <div className="bg-white p-6 rounded-2xl shadow-sm">
+              <div className="card p-6">
                 <div className="flex items-center gap-3 mb-2">
-                  <MessageSquare className="text-green-500" size={24} />
-                  <span className="text-gray-500">总产品咨询数</span>
+                  <MessageSquare className="text-score" size={24} />
+                  <span className="text-sm text-ink-muted">总产品咨询数</span>
                 </div>
-                <p className="text-3xl font-bold">{overview.totalConversations}</p>
+                <p className="text-3xl font-semibold text-ink tabular-nums">{overview.totalConversations}</p>
               </div>
-              <div className="bg-white p-6 rounded-2xl shadow-sm">
+              <div className="card p-6">
                 <div className="flex items-center gap-3 mb-2">
-                  <Users className="text-purple-500" size={24} />
-                  <span className="text-gray-500">今日会话</span>
+                  <Users className="text-info" size={24} />
+                  <span className="text-sm text-ink-muted">今日会话</span>
                 </div>
-                <p className="text-3xl font-bold">{overview.dailyStats[0]?.unique_sessions || 0}</p>
+                <p className="text-3xl font-semibold text-ink tabular-nums">{overview.dailyStats[0]?.unique_sessions || 0}</p>
               </div>
-              <div className="bg-white p-6 rounded-2xl shadow-sm">
+              <div className="card p-6">
                 <div className="flex items-center gap-3 mb-2">
-                  <Users className="text-orange-500" size={24} />
-                  <span className="text-gray-500">总独立 IP</span>
+                  <Users className="text-sticker-orange" size={24} />
+                  <span className="text-sm text-ink-muted">总独立 IP</span>
                 </div>
-                <p className="text-3xl font-bold">{overview.totalUniqueIps || 0}</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-white p-6 rounded-2xl shadow-sm">
-                <div className="flex items-center gap-3 mb-2">
-                  <MessageSquare className="text-blue-500" size={24} />
-                  <span className="text-gray-500">总对话量</span>
-                </div>
-                <p className="text-3xl font-bold">{overview.totalConversationMessages || 0}</p>
-              </div>
-              <div className="bg-white p-6 rounded-2xl shadow-sm">
-                <div className="flex items-center gap-3 mb-2">
-                  <MessageSquare className="text-indigo-500" size={24} />
-                  <span className="text-gray-500">今日对话量</span>
-                </div>
-                <p className="text-3xl font-bold">{overview.dailyConversationMetrics?.[0]?.total_messages || 0}</p>
+                <p className="text-3xl font-semibold text-ink tabular-nums">{overview.totalUniqueIps || 0}</p>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-white p-6 rounded-2xl shadow-sm">
+              <div className="card p-6">
                 <div className="flex items-center gap-3 mb-2">
-                  <MessageSquare className="text-emerald-500" size={24} />
-                  <span className="text-gray-500">有用反馈</span>
+                  <MessageSquare className="text-info" size={24} />
+                  <span className="text-sm text-ink-muted">总对话量</span>
                 </div>
-                <p className="text-3xl font-bold">{overview.feedbackStats?.likes || 0}</p>
+                <p className="text-3xl font-semibold text-ink tabular-nums">{overview.totalConversationMessages || 0}</p>
               </div>
-              <div className="bg-white p-6 rounded-2xl shadow-sm">
+              <div className="card p-6">
                 <div className="flex items-center gap-3 mb-2">
-                  <MessageSquare className="text-rose-500" size={24} />
-                  <span className="text-gray-500">不太有用</span>
+                  <MessageSquare className="text-info" size={24} />
+                  <span className="text-sm text-ink-muted">今日对话量</span>
                 </div>
-                <p className="text-3xl font-bold">{overview.feedbackStats?.dislikes || 0}</p>
+                <p className="text-3xl font-semibold text-ink tabular-nums">{overview.dailyConversationMetrics?.[0]?.total_messages || 0}</p>
               </div>
             </div>
-            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-              <div className="p-6 border-b border-gray-100">
-                <h2 className="text-lg font-bold">每日统计</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="card p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <MessageSquare className="text-score" size={24} />
+                  <span className="text-sm text-ink-muted">有用反馈</span>
+                </div>
+                <p className="text-3xl font-semibold text-ink tabular-nums">{overview.feedbackStats?.likes || 0}</p>
+              </div>
+              <div className="card p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <MessageSquare className="text-danger" size={24} />
+                  <span className="text-sm text-ink-muted">不太有用</span>
+                </div>
+                <p className="text-3xl font-semibold text-ink tabular-nums">{overview.feedbackStats?.dislikes || 0}</p>
+              </div>
+            </div>
+            <div className="card overflow-hidden">
+              <div className="p-6 border-b border-hairline">
+                <h2 className="font-serif text-lg">每日统计</h2>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-surface-sunken">
                     <tr>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">日期</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">独立会话</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">页面访问</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">消息发送</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">总事件</th>
+                      <th className="px-6 py-3 text-left micro-label">日期</th>
+                      <th className="px-6 py-3 text-left micro-label">独立会话</th>
+                      <th className="px-6 py-3 text-left micro-label">页面访问</th>
+                      <th className="px-6 py-3 text-left micro-label">消息发送</th>
+                      <th className="px-6 py-3 text-left micro-label">总事件</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-hairline">
                     {overview.dailyStats.map((stat) => (
-                      <tr key={stat.date} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 text-sm">{stat.date}</td>
-                        <td className="px-6 py-4 text-sm">{stat.unique_sessions}</td>
-                        <td className="px-6 py-4 text-sm">{stat.page_views}</td>
-                        <td className="px-6 py-4 text-sm">{stat.messages_sent}</td>
-                        <td className="px-6 py-4 text-sm">{stat.total_events}</td>
+                      <tr key={stat.date} className="hover:bg-surface-sunken">
+                        <td className="px-6 py-4 text-sm tabular-nums">{stat.date}</td>
+                        <td className="px-6 py-4 text-sm tabular-nums">{stat.unique_sessions}</td>
+                        <td className="px-6 py-4 text-sm tabular-nums">{stat.page_views}</td>
+                        <td className="px-6 py-4 text-sm tabular-nums">{stat.messages_sent}</td>
+                        <td className="px-6 py-4 text-sm tabular-nums">{stat.total_events}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             </div>
-            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-              <div className="p-6 border-b border-gray-100">
-                <h2 className="text-lg font-bold">单对话框平均对话次数</h2>
-                <p className="text-sm text-gray-500 mt-1">按日统计：总消息数 / 对话框数</p>
+            <div className="card overflow-hidden">
+              <div className="p-6 border-b border-hairline">
+                <h2 className="font-serif text-lg">单对话框平均对话次数</h2>
+                <p className="text-sm text-ink-muted mt-1">按日统计：总消息数 / 对话框数</p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-surface-sunken">
                     <tr>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">日期</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">对话框数</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">对话量</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">平均对话次数</th>
+                      <th className="px-6 py-3 text-left micro-label">日期</th>
+                      <th className="px-6 py-3 text-left micro-label">对话框数</th>
+                      <th className="px-6 py-3 text-left micro-label">对话量</th>
+                      <th className="px-6 py-3 text-left micro-label">平均对话次数</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-hairline">
                     {(overview.dailyConversationMetrics || []).map((stat) => (
-                      <tr key={stat.date} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 text-sm">{stat.date}</td>
-                        <td className="px-6 py-4 text-sm">{stat.conversations}</td>
-                        <td className="px-6 py-4 text-sm">{stat.total_messages}</td>
-                        <td className="px-6 py-4 text-sm">{stat.avg_messages_per_conversation.toFixed(1)}</td>
+                      <tr key={stat.date} className="hover:bg-surface-sunken">
+                        <td className="px-6 py-4 text-sm tabular-nums">{stat.date}</td>
+                        <td className="px-6 py-4 text-sm tabular-nums">{stat.conversations}</td>
+                        <td className="px-6 py-4 text-sm tabular-nums">{stat.total_messages}</td>
+                        <td className="px-6 py-4 text-sm tabular-nums">{stat.avg_messages_per_conversation.toFixed(1)}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             </div>
-            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-              <div className="p-6 border-b border-gray-100">
-                <h2 className="text-lg font-bold">IP 维度统计</h2>
-                <p className="text-sm text-gray-500 mt-1">独立 IP、IP DAU 与访问 IP</p>
+            <div className="card overflow-hidden">
+              <div className="p-6 border-b border-hairline">
+                <h2 className="font-serif text-lg">IP 维度统计</h2>
+                <p className="text-sm text-ink-muted mt-1">独立 IP、IP DAU 与访问 IP</p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-surface-sunken">
                     <tr>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">日期</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">独立 IP</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">访问 IP</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">IP DAU</th>
+                      <th className="px-6 py-3 text-left micro-label">日期</th>
+                      <th className="px-6 py-3 text-left micro-label">独立 IP</th>
+                      <th className="px-6 py-3 text-left micro-label">访问 IP</th>
+                      <th className="px-6 py-3 text-left micro-label">IP DAU</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-hairline">
                     {(overview.dailyIpStats || []).map((stat) => (
-                      <tr key={stat.date} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 text-sm">{stat.date}</td>
-                        <td className="px-6 py-4 text-sm">{stat.unique_ips}</td>
-                        <td className="px-6 py-4 text-sm">{stat.page_view_ips}</td>
-                        <td className="px-6 py-4 text-sm">{stat.active_ips}</td>
+                      <tr key={stat.date} className="hover:bg-surface-sunken">
+                        <td className="px-6 py-4 text-sm tabular-nums">{stat.date}</td>
+                        <td className="px-6 py-4 text-sm tabular-nums">{stat.unique_ips}</td>
+                        <td className="px-6 py-4 text-sm tabular-nums">{stat.page_view_ips}</td>
+                        <td className="px-6 py-4 text-sm tabular-nums">{stat.active_ips}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             </div>
-            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-              <div className="p-6 border-b border-gray-100">
-                <h2 className="text-lg font-bold">次日留存（IP）</h2>
-                <p className="text-sm text-gray-500 mt-1">按 IP 计算，次日仍活跃的比例</p>
+            <div className="card overflow-hidden">
+              <div className="p-6 border-b border-hairline">
+                <h2 className="font-serif text-lg">次日留存（IP）</h2>
+                <p className="text-sm text-ink-muted mt-1">按 IP 计算，次日仍活跃的比例</p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-surface-sunken">
                     <tr>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">日期</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">当日活跃 IP</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">次日留存 IP</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">留存率</th>
+                      <th className="px-6 py-3 text-left micro-label">日期</th>
+                      <th className="px-6 py-3 text-left micro-label">当日活跃 IP</th>
+                      <th className="px-6 py-3 text-left micro-label">次日留存 IP</th>
+                      <th className="px-6 py-3 text-left micro-label">留存率</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-hairline">
                     {(overview.ipRetention || []).map((stat) => (
-                      <tr key={stat.date} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 text-sm">{stat.date}</td>
-                        <td className="px-6 py-4 text-sm">{stat.active_ips}</td>
-                        <td className="px-6 py-4 text-sm">{stat.retained_ips}</td>
-                        <td className="px-6 py-4 text-sm">{(stat.retention_rate * 100).toFixed(1)}%</td>
+                      <tr key={stat.date} className="hover:bg-surface-sunken">
+                        <td className="px-6 py-4 text-sm tabular-nums">{stat.date}</td>
+                        <td className="px-6 py-4 text-sm tabular-nums">{stat.active_ips}</td>
+                        <td className="px-6 py-4 text-sm tabular-nums">{stat.retained_ips}</td>
+                        <td className="px-6 py-4 text-sm tabular-nums">{(stat.retention_rate * 100).toFixed(1)}%</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             </div>
-            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-              <div className="p-6 border-b border-gray-100">
-                <h2 className="text-lg font-bold">对话完成率（IP）</h2>
-                <p className="text-sm text-gray-500 mt-1">进入聊天页并至少发送一条消息</p>
+            <div className="card overflow-hidden">
+              <div className="p-6 border-b border-hairline">
+                <h2 className="font-serif text-lg">对话完成率（IP）</h2>
+                <p className="text-sm text-ink-muted mt-1">进入聊天页并至少发送一条消息</p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-surface-sunken">
                     <tr>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">日期</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">进入聊天 IP</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">发送消息 IP</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">完成率</th>
+                      <th className="px-6 py-3 text-left micro-label">日期</th>
+                      <th className="px-6 py-3 text-left micro-label">进入聊天 IP</th>
+                      <th className="px-6 py-3 text-left micro-label">发送消息 IP</th>
+                      <th className="px-6 py-3 text-left micro-label">完成率</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-hairline">
                     {(overview.chatCompletion || []).map((stat) => (
-                      <tr key={stat.date} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 text-sm">{stat.date}</td>
-                        <td className="px-6 py-4 text-sm">{stat.started_ips}</td>
-                        <td className="px-6 py-4 text-sm">{stat.completed_ips}</td>
-                        <td className="px-6 py-4 text-sm">{(stat.completion_rate * 100).toFixed(1)}%</td>
+                      <tr key={stat.date} className="hover:bg-surface-sunken">
+                        <td className="px-6 py-4 text-sm tabular-nums">{stat.date}</td>
+                        <td className="px-6 py-4 text-sm tabular-nums">{stat.started_ips}</td>
+                        <td className="px-6 py-4 text-sm tabular-nums">{stat.completed_ips}</td>
+                        <td className="px-6 py-4 text-sm tabular-nums">{(stat.completion_rate * 100).toFixed(1)}%</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             </div>
-            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-              <div className="p-6 border-b border-gray-100">
-                <h2 className="text-lg font-bold">阶段分布（IP）</h2>
-                <p className="text-sm text-gray-500 mt-1">info/深挖/多视角分析阶段的用户分布</p>
+            <div className="card overflow-hidden">
+              <div className="p-6 border-b border-hairline">
+                <h2 className="font-serif text-lg">阶段分布（IP）</h2>
+                <p className="text-sm text-ink-muted mt-1">info/深挖/多视角分析阶段的用户分布</p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-surface-sunken">
                     <tr>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">阶段</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">独立 IP</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">对话数</th>
+                      <th className="px-6 py-3 text-left micro-label">阶段</th>
+                      <th className="px-6 py-3 text-left micro-label">独立 IP</th>
+                      <th className="px-6 py-3 text-left micro-label">对话数</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-hairline">
                     {(overview.stageStats || []).map((stat) => (
-                      <tr key={stat.stage} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 text-sm">
+                      <tr key={stat.stage} className="hover:bg-surface-sunken">
+                        <td className="px-6 py-4 text-sm tabular-nums">
                           {stat.stage === 'info'
                             ? '信息收集'
                             : stat.stage === 'deep'
@@ -877,27 +877,27 @@ export default function AnalyticsPage() {
                                 ? '多视角分析'
                                 : stat.stage || '未知'}
                         </td>
-                        <td className="px-6 py-4 text-sm">{stat.unique_ips}</td>
-                        <td className="px-6 py-4 text-sm">{stat.conversations}</td>
+                        <td className="px-6 py-4 text-sm tabular-nums">{stat.unique_ips}</td>
+                        <td className="px-6 py-4 text-sm tabular-nums">{stat.conversations}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             </div>
-            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-              <div className="p-6 border-b border-gray-100">
-                <h2 className="text-lg font-bold">用户反馈</h2>
-                <p className="text-sm text-gray-500 mt-1">来自反馈页的留言</p>
+            <div className="card overflow-hidden">
+              <div className="p-6 border-b border-hairline">
+                <h2 className="font-serif text-lg">用户反馈</h2>
+                <p className="text-sm text-ink-muted mt-1">来自反馈页的留言</p>
               </div>
               <div className="divide-y">
                 {(overview.feedbackItems || []).length === 0 ? (
-                  <div className="p-6 text-sm text-gray-500">暂无反馈</div>
+                  <div className="p-6 text-sm text-ink-muted">暂无反馈</div>
                 ) : (
                   (overview.feedbackItems || []).map((item) => (
                     <div key={item.id} className="p-6">
-                      <div className="text-sm text-gray-900 whitespace-pre-wrap">{item.content}</div>
-                      <div className="text-xs text-gray-500 mt-2">
+                      <div className="text-sm text-ink whitespace-pre-wrap">{item.content}</div>
+                      <div className="text-xs text-ink-muted mt-2">
                         {item.contact ? `联系方式：${item.contact}` : '未留联系方式'} · {new Date(item.created_at).toLocaleString('zh-CN')}
                       </div>
                     </div>
@@ -905,29 +905,29 @@ export default function AnalyticsPage() {
                 )}
               </div>
             </div>
-            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-              <div className="p-6 border-b border-gray-100">
-                <h2 className="text-lg font-bold">消息评价</h2>
-                <p className="text-sm text-gray-500 mt-1">点赞/踩 + 文字评论</p>
+            <div className="card overflow-hidden">
+              <div className="p-6 border-b border-hairline">
+                <h2 className="font-serif text-lg">消息评价</h2>
+                <p className="text-sm text-ink-muted mt-1">点赞/踩 + 文字评论</p>
               </div>
               <div className="divide-y">
                 {(overview.messageFeedbackItems || []).length === 0 ? (
-                  <div className="p-6 text-sm text-gray-500">暂无评价</div>
+                  <div className="p-6 text-sm text-ink-muted">暂无评价</div>
                 ) : (
                   (overview.messageFeedbackItems || []).map((item) => (
                     <div key={item.id} className="p-6">
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <div className="flex items-center gap-2 text-xs text-ink-muted">
                         <span>{item.vote === 'up' ? '👍 有用' : '👎 不太有用'}</span>
                         {item.stage ? <span>阶段：{item.stage}</span> : null}
                         {item.ip_address ? <span>IP：{item.ip_address}</span> : null}
                         {item.session_id ? <span>会话：{item.session_id}</span> : null}
                       </div>
                       {item.comment ? (
-                        <div className="text-sm text-gray-900 mt-2 whitespace-pre-wrap">{item.comment}</div>
+                        <div className="text-sm text-ink mt-2 whitespace-pre-wrap">{item.comment}</div>
                       ) : (
-                        <div className="text-sm text-gray-400 mt-2">（无文字评论）</div>
+                        <div className="text-sm text-ink-faint mt-2">（无文字评论）</div>
                       )}
-                      <div className="text-xs text-gray-500 mt-2">
+                      <div className="text-xs text-ink-muted mt-2">
                         {new Date(item.created_at).toLocaleString('zh-CN')}
                       </div>
                     </div>
@@ -938,66 +938,66 @@ export default function AnalyticsPage() {
           </div>
         )}
         {activeTab === 'conversations' && (
-          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-gray-100">
-              <h2 className="text-lg font-bold">对话记录</h2>
-              <p className="text-sm text-gray-500 mt-1">
+          <div className="card overflow-hidden">
+            <div className="p-6 border-b border-hairline">
+              <h2 className="font-serif text-lg">对话记录</h2>
+              <p className="text-sm text-ink-muted mt-1">
                 共 {conversationsTotal} 条对话 · 第 {page} / {totalPages} 页
               </p>
               <input
-                className="mt-4 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                className="input-field mt-4 px-3 py-2 text-sm"
                 placeholder="按 session_id 或 IP 搜索"
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
               />
             </div>
             {filteredConversations.length === 0 ? (
-              <div className="p-12 text-center text-gray-500">暂无对话记录</div>
+              <div className="p-12 text-center text-ink-muted">暂无对话记录</div>
             ) : (
               <>
-                <div className="divide-y divide-gray-100">
+                <div className="divide-y divide-hairline">
                   {filteredConversations.map((conv) => (
                     <div
                       key={conv.id}
-                      className="p-6 hover:bg-gray-50 cursor-pointer"
+                      className="p-6 hover:bg-surface-sunken cursor-pointer"
                       onClick={() => viewConversation(conv.id)}
                     >
                       <div className="flex justify-between items-start">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <span className={`px-2 py-0.5 rounded text-xs ${
-                              conv.stage === 'analysis' ? 'bg-green-100 text-green-700' :
-                              conv.stage === 'deep' ? 'bg-blue-100 text-blue-700' :
-                              'bg-gray-100 text-gray-700'
+                              conv.stage === 'analysis' ? 'bg-score-bg text-score' :
+                              conv.stage === 'deep' ? 'bg-info-bg text-info' :
+                              'bg-surface-sunken text-ink-secondary'
                             }`}>
                               {conv.stage === 'analysis' ? '多视角分析' :
                                conv.stage === 'deep' ? '深度追问' : '信息收集'}
                             </span>
                             {conv.invite_code ? (
-                              <span className="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-600">
+                              <span className="px-2 py-0.5 rounded-full text-xs bg-surface-sunken text-ink-secondary">
                                 邀请码：{conv.invite_code}
                               </span>
                             ) : null}
-                            <span className="text-sm text-gray-500">{conv.message_count} 条消息</span>
+                            <span className="text-sm text-ink-muted tabular-nums">{conv.message_count} 条消息</span>
                           </div>
                           {conv.ip_address ? (
-                            <p className="text-xs text-gray-400">IP: {conv.ip_address}</p>
+                            <p className="text-xs text-ink-faint">IP: {conv.ip_address}</p>
                           ) : null}
                         {conv.summary?.productTitle || conv.summary?.product ? (
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="text-xs text-ink-muted mt-1">
                             产品：{String(conv.summary.productTitle || conv.summary.product).slice(0, 80)}
                           </p>
                         ) : null}
-                          <p className="text-sm text-gray-600 truncate">
+                          <p className="text-sm text-ink-secondary truncate">
                             {conv.messages[1]?.content || '无内容'}
                           </p>
-                          <p className="text-xs text-gray-400 mt-1">
+                          <p className="text-xs text-ink-faint mt-1">
                             {new Date(conv.created_at).toLocaleString('zh-CN')}
                           </p>
                         </div>
                       <div className="flex items-center gap-3 ml-4 flex-shrink-0">
                         <button
-                          className="text-gray-400 hover:text-yellow-600"
+                          className="text-ink-faint hover:text-warn"
                           onClick={(event) => {
                             event.stopPropagation();
                             toggleStar(conv.id, !conv.starred);
@@ -1007,27 +1007,27 @@ export default function AnalyticsPage() {
                         >
                           <Star
                             size={18}
-                            className={conv.starred ? 'text-yellow-500' : 'text-gray-400'}
+                            className={conv.starred ? 'text-sticker-yellow' : 'text-ink-faint'}
                             fill={conv.starred ? 'currentColor' : 'none'}
                           />
                         </button>
-                        <Eye size={20} className="text-gray-400" />
+                        <Eye size={20} className="text-ink-faint" />
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-                <div className="flex items-center justify-between p-4 border-t border-gray-100 text-sm text-gray-600">
+                <div className="flex items-center justify-between p-4 border-t border-hairline text-sm text-ink-secondary">
                   <button
-                    className="px-3 py-1 rounded border border-gray-200 disabled:opacity-50"
+                    className="btn-secondary px-3 py-1 text-sm"
                     onClick={() => setPage(p => Math.max(1, p - 1))}
                     disabled={page <= 1}
                   >
                     上一页
                   </button>
-                  <span>第 {page} / {totalPages} 页</span>
+                  <span className="tabular-nums">第 {page} / {totalPages} 页</span>
                   <button
-                    className="px-3 py-1 rounded border border-gray-200 disabled:opacity-50"
+                    className="btn-secondary px-3 py-1 text-sm"
                     onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                     disabled={page >= totalPages}
                   >

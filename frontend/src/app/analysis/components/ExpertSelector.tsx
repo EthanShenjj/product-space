@@ -114,27 +114,27 @@ export function ExpertSelector({ summary, onStartAnalysis }: ExpertSelectorProps
   return (
     <div className="max-w-4xl mx-auto">
       {/* 产品概要 */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
-        <h2 className="text-lg font-bold mb-4">产品概要</h2>
-        <div className="bg-gray-50 rounded-xl p-4">
-          <p className="text-gray-700 whitespace-pre-wrap">{summary.product || '暂无产品描述'}</p>
+      <div className="card p-6 mb-6">
+        <div className="micro-label mb-3">产品概要</div>
+        <div className="bg-surface-sunken rounded-xl p-4">
+          <p className="text-ink whitespace-pre-wrap">{summary.product || '暂无产品描述'}</p>
         </div>
       </div>
 
       {/* 用户目标选择 - 新增 */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
-        <h2 className="text-lg font-bold mb-2">你现在最想解决什么问题？</h2>
-        <p className="text-sm text-gray-500 mb-4">选择你的目标，专家会给出更有针对性的落地建议</p>
+      <div className="card p-6 mb-6">
+        <h2 className="text-lg font-semibold mb-2">你现在最想解决什么问题？</h2>
+        <p className="text-sm text-ink-muted mb-4">选择你的目标，专家会给出更有针对性的落地建议</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {USER_GOALS.map((goal) => (
             <button
               key={goal.id}
               onClick={() => setUserGoal(goal.id)}
-              className={`p-4 rounded-xl border-2 text-left transition-all ${
+              className={`p-4 rounded-xl border text-left transition-all ${
                 userGoal === goal.id
-                  ? 'border-black bg-gray-50'
-                  : 'border-gray-200 hover:border-gray-300'
+                  ? 'border-ink bg-surface-sunken'
+                  : 'border-hairline hover:border-hairline-strong'
               }`}
             >
               <div className="flex items-start gap-3">
@@ -143,10 +143,10 @@ export function ExpertSelector({ summary, onStartAnalysis }: ExpertSelectorProps
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{goal.label}</span>
                     {userGoal === goal.id && (
-                      <Check size={16} className="text-green-600" />
+                      <Check size={16} className="text-score" />
                     )}
                   </div>
-                  <p className="text-sm text-gray-500 mt-1">{goal.description}</p>
+                  <p className="text-sm text-ink-muted mt-1">{goal.description}</p>
                 </div>
               </div>
             </button>
@@ -155,27 +155,27 @@ export function ExpertSelector({ summary, onStartAnalysis }: ExpertSelectorProps
       </div>
 
       {/* 产品类型选择 */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
-        <h2 className="text-lg font-bold mb-4">产品类型</h2>
-        <p className="text-sm text-gray-500 mb-3">选择产品类型，我们会为你推荐最合适的专家</p>
+      <div className="card p-6 mb-6">
+        <h2 className="text-lg font-semibold mb-4">产品类型</h2>
+        <p className="text-sm text-ink-muted mb-3">选择产品类型，我们会为你推荐最合适的专家</p>
 
         <div className="relative">
           <button
             onClick={() => setShowTypeDropdown(!showTypeDropdown)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl flex items-center justify-between hover:border-gray-300 transition-colors"
+            className="input-field px-4 py-3 flex items-center justify-between hover:border-hairline-strong transition-colors"
           >
             <span>{productType}</span>
-            <ChevronDown size={20} className={`text-gray-400 transition-transform ${showTypeDropdown ? 'rotate-180' : ''}`} />
+            <ChevronDown size={20} className={`text-ink-faint transition-transform ${showTypeDropdown ? 'rotate-180' : ''}`} />
           </button>
 
           {showTypeDropdown && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-surface-raised border border-hairline rounded-xl shadow-float z-10 overflow-hidden">
               {PRODUCT_TYPES.map((type) => (
                 <button
                   key={type}
                   onClick={() => handleProductTypeChange(type)}
-                  className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
-                    type === productType ? 'bg-gray-50 font-medium' : ''
+                  className={`w-full px-4 py-3 text-left hover:bg-surface-sunken transition-colors ${
+                    type === productType ? 'bg-surface-sunken font-medium' : ''
                   }`}
                 >
                   {type}
@@ -187,15 +187,15 @@ export function ExpertSelector({ summary, onStartAnalysis }: ExpertSelectorProps
       </div>
 
       {/* 专家选择 */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
-        <h2 className="text-lg font-bold mb-2">选择专家</h2>
-        <p className="text-sm text-gray-500 mb-6">
+      <div className="card p-6 mb-6">
+        <h2 className="text-lg font-semibold mb-2">选择专家</h2>
+        <p className="text-sm text-ink-muted mb-6">
           已选择 {selectedExperts.length} 位专家，带有"推荐"标签的专家最适合分析你的产品类型
         </p>
 
         {expertsByCategory.map((category) => (
           <div key={category.id} className="mb-6 last:mb-0">
-            <h3 className="text-sm font-medium text-gray-400 mb-3">{category.name}</h3>
+            <div className="micro-label mb-3">{category.name}</div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {category.experts.map((expert) => (
                 <ExpertCard
@@ -212,16 +212,16 @@ export function ExpertSelector({ summary, onStartAnalysis }: ExpertSelectorProps
       </div>
 
       {/* 目标用户画像 */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
+      <div className="card p-6 mb-6">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="text-lg font-bold">目标用户画像</h2>
-            <p className="text-sm text-gray-500 mt-1">先生成画像，再选择你认为最贴近的用户（可多选）</p>
+            <h2 className="text-lg font-semibold">目标用户画像</h2>
+            <p className="text-sm text-ink-muted mt-1">先生成画像，再选择你认为最贴近的用户（可多选）</p>
           </div>
           <button
             type="button"
             onClick={loadPersonas}
-            className="text-sm px-3 py-1.5 rounded-full border border-gray-200 hover:border-gray-400"
+            className="btn-secondary text-sm px-3 py-1.5"
             disabled={personaLoading}
           >
             {personaLoading ? '生成中…' : '重新生成'}
@@ -229,11 +229,11 @@ export function ExpertSelector({ summary, onStartAnalysis }: ExpertSelectorProps
         </div>
 
         {personaError ? (
-          <p className="text-sm text-red-500 mb-3">{personaError}</p>
+          <p className="text-sm text-danger mb-3">{personaError}</p>
         ) : null}
 
         {personaLoading && personas.length === 0 ? (
-          <div className="text-sm text-gray-400">正在生成画像…</div>
+          <div className="text-sm text-ink-faint">正在生成画像…</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {personas.map((p) => (
@@ -248,13 +248,13 @@ export function ExpertSelector({ summary, onStartAnalysis }: ExpertSelectorProps
                   )
                 }
                 className={`text-left rounded-xl border p-4 transition ${
-                  selectedPersonaIds.includes(p.id) ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'
+                  selectedPersonaIds.includes(p.id) ? 'border-ink bg-surface-sunken' : 'border-hairline hover:border-hairline-strong'
                 }`}
               >
-                <div className="font-medium text-gray-900">{p.name} · {p.role}</div>
-                <p className="text-xs text-gray-500 mt-1">{p.shortBio}</p>
-                <p className="text-xs text-gray-500 mt-2">场景：{p.scenario}</p>
-                <p className="text-xs text-gray-500 mt-2">付费意愿：{p.willingnessToPay}</p>
+                <div className="font-medium text-ink">{p.name} · {p.role}</div>
+                <p className="text-xs text-ink-muted mt-1">{p.shortBio}</p>
+                <p className="text-xs text-ink-muted mt-2">场景：{p.scenario}</p>
+                <p className="text-xs text-ink-muted mt-2">付费意愿：{p.willingnessToPay}</p>
               </button>
             ))}
           </div>
@@ -262,20 +262,20 @@ export function ExpertSelector({ summary, onStartAnalysis }: ExpertSelectorProps
       </div>
 
       {/* 开始分析按钮 */}
-      <div className="sticky bottom-4 bg-white rounded-2xl p-4 shadow-lg border border-gray-100">
+      <div className="sticky bottom-4 bg-surface-raised rounded-2xl p-4 shadow-float border border-hairline">
         <div className="flex items-center justify-between">
           <div>
-            <p className="font-medium">
+            <p className="font-medium tabular-nums">
               已选择 {selectedExperts.length} 位专家
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-ink-muted">
               目标：{USER_GOALS.find(g => g.id === userGoal)?.label}
             </p>
           </div>
           <button
             onClick={handleStart}
             disabled={selectedExperts.length === 0}
-            className="px-6 py-3 bg-black text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+            className="btn-primary px-6 py-3 text-sm"
           >
             开始多视角分析
           </button>

@@ -17,27 +17,27 @@ export function ExpertCard({ expert, isSelected, isRecommended, onToggle }: Expe
   return (
     <button
       onClick={onToggle}
-      className={`relative p-4 rounded-xl border-2 transition-all text-left w-full ${
+      className={`relative p-4 rounded-xl border transition-all text-left w-full ${
         isSelected
-          ? 'border-black bg-gray-50'
-          : 'border-gray-200 hover:border-gray-300 bg-white'
+          ? 'border-ink bg-surface-sunken shadow-card'
+          : 'border-hairline hover:border-hairline-strong bg-surface'
       }`}
     >
       {isRecommended && (
-        <span className="absolute -top-2 -right-2 px-2 py-0.5 bg-yellow-400 text-yellow-900 text-xs font-medium rounded-full">
+        <span className="absolute -top-2 -right-2 px-2 py-0.5 bg-sticker-yellow text-ink text-xs font-medium rounded-full">
           推荐
         </span>
       )}
 
       {isSelected && (
-        <span className="absolute top-3 right-3 w-5 h-5 bg-black rounded-full flex items-center justify-center">
-          <Check size={12} className="text-white" />
+        <span className="absolute top-3 right-3 w-5 h-5 bg-ink rounded-full flex items-center justify-center">
+          <Check size={12} className="text-paper" />
         </span>
       )}
 
       <div className="flex items-start gap-3">
         <div
-          className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg overflow-hidden"
+          className="w-12 h-12 rounded-full flex items-center justify-center text-paper font-bold text-lg overflow-hidden"
           style={{ backgroundColor: expert.color }}
         >
           {expert.avatar && !avatarError ? (
@@ -53,12 +53,12 @@ export function ExpertCard({ expert, isSelected, isRecommended, onToggle }: Expe
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-gray-900">{expert.name}</h3>
-          <p className="text-sm text-gray-500 truncate">{expert.title}</p>
+          <h3 className="font-semibold text-ink">{expert.name}</h3>
+          <p className="text-sm text-ink-muted truncate">{expert.title}</p>
         </div>
       </div>
 
-      <p className="mt-3 text-xs text-gray-400 line-clamp-2">
+      <p className="mt-3 text-xs text-ink-faint line-clamp-2">
         {expert.description}
       </p>
 
@@ -66,7 +66,7 @@ export function ExpertCard({ expert, isSelected, isRecommended, onToggle }: Expe
         {expert.expertise.slice(0, 2).map((item) => (
           <span
             key={item}
-            className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded"
+            className="px-2 py-0.5 bg-surface-sunken text-ink-secondary text-xs rounded-full"
           >
             {item}
           </span>

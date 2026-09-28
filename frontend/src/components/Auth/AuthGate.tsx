@@ -269,7 +269,7 @@ export default function AuthGate({ children }: AuthGateProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-8 h-8 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-hairline-strong border-t-ink rounded-full animate-spin" />
       </div>
     );
   }
@@ -291,48 +291,48 @@ export default function AuthGate({ children }: AuthGateProps) {
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-faint" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="邮箱"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                  className="input-field input-pill w-full py-3 pl-10 pr-4"
                   autoFocus
                 />
               </div>
             </div>
             <div>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-faint" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="密码"
-                  className="w-full pl-10 pr-10 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                  className="input-field input-pill w-full py-3 pl-10 pr-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-faint hover:text-ink"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
-            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+            {error && <p className="text-danger text-sm text-center">{error}</p>}
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary w-full py-3 text-sm"
             >
               {isSubmitting ? '登录中...' : '登录'}
             </button>
             <button
               type="button"
               onClick={continueAsGuest}
-              className="w-full py-3 border border-gray-200 text-gray-700 rounded-xl font-medium hover:border-gray-400 hover:bg-gray-50 transition-colors"
+              className="btn-secondary w-full py-3 text-sm"
             >
               先以访客身份使用
             </button>
@@ -340,14 +340,14 @@ export default function AuthGate({ children }: AuthGateProps) {
               <button
                 type="button"
                 onClick={() => switchMode('register')}
-                className="text-gray-500 hover:text-black"
+                className="text-ink-muted hover:text-ink"
               >
                 注册账号
               </button>
               <button
                 type="button"
                 onClick={() => switchMode('forgot')}
-                className="text-gray-500 hover:text-black"
+                className="text-ink-muted hover:text-ink"
               >
                 忘记密码？
               </button>
@@ -360,29 +360,29 @@ export default function AuthGate({ children }: AuthGateProps) {
           <form onSubmit={(e) => { e.preventDefault(); sendCode('register'); }} className="space-y-4">
             <div>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-faint" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="邮箱"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                  className="input-field input-pill w-full py-3 pl-10 pr-4"
                   autoFocus
                 />
               </div>
             </div>
-            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+            {error && <p className="text-danger text-sm text-center">{error}</p>}
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary w-full py-3 text-sm"
             >
               {isSubmitting ? '发送中...' : '发送验证码'}
             </button>
             <button
               type="button"
               onClick={() => switchMode('login')}
-              className="w-full flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-black"
+              className="w-full flex items-center justify-center gap-2 text-sm text-ink-muted hover:text-ink"
             >
               <ArrowLeft className="w-4 h-4" />
               返回登录
@@ -394,8 +394,8 @@ export default function AuthGate({ children }: AuthGateProps) {
       case 'forgot-verify':
         return (
           <form onSubmit={(e) => { e.preventDefault(); verifyCode(); }} className="space-y-4">
-            <p className="text-sm text-gray-500 text-center mb-4">
-              验证码已发送至 <span className="text-black">{email}</span>
+            <p className="text-sm text-ink-muted text-center mb-4">
+              验证码已发送至 <span className="text-ink">{email}</span>
             </p>
             <div>
               <input
@@ -403,28 +403,28 @@ export default function AuthGate({ children }: AuthGateProps) {
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 placeholder="请输入 6 位验证码"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-center text-2xl tracking-widest"
+                className="input-field input-pill w-full px-4 py-3 text-center text-2xl tracking-widest"
                 autoFocus
                 maxLength={6}
               />
             </div>
-            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+            {error && <p className="text-danger text-sm text-center">{error}</p>}
             <button
               type="submit"
               disabled={code.length !== 6}
-              className="w-full py-3 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary w-full py-3 text-sm"
             >
               下一步
             </button>
             <div className="text-center">
               {countdown > 0 ? (
-                <span className="text-sm text-gray-400">{countdown}s 后可重新发送</span>
+                <span className="text-sm text-ink-faint tabular-nums">{countdown}s 后可重新发送</span>
               ) : (
                 <button
                   type="button"
                   onClick={() => sendCode(mode === 'register-verify' ? 'register' : 'reset_password')}
                   disabled={isSubmitting}
-                  className="text-sm text-gray-500 hover:text-black"
+                  className="text-sm text-ink-muted hover:text-ink"
                 >
                   重新发送验证码
                 </button>
@@ -433,7 +433,7 @@ export default function AuthGate({ children }: AuthGateProps) {
             <button
               type="button"
               onClick={() => switchMode(mode === 'register-verify' ? 'register' : 'forgot')}
-              className="w-full flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-black"
+              className="w-full flex items-center justify-center gap-2 text-sm text-ink-muted hover:text-ink"
             >
               <ArrowLeft className="w-4 h-4" />
               返回
@@ -444,41 +444,41 @@ export default function AuthGate({ children }: AuthGateProps) {
       case 'register-password':
         return (
           <form onSubmit={handleRegister} className="space-y-4">
-            <p className="text-sm text-gray-500 text-center mb-4">
+            <p className="text-sm text-ink-muted text-center mb-4">
               设置您的登录密码
             </p>
             <div>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-faint" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="设置密码"
-                  className="w-full pl-10 pr-10 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                  className="input-field input-pill w-full py-3 pl-10 pr-10"
                   autoFocus
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-faint hover:text-ink"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
-            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+            {error && <p className="text-danger text-sm text-center">{error}</p>}
             <button
               type="submit"
               disabled={isSubmitting || !password}
-              className="w-full py-3 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary w-full py-3 text-sm"
             >
               {isSubmitting ? '注册中...' : '完成注册'}
             </button>
             <button
               type="button"
               onClick={() => switchMode('register-verify')}
-              className="w-full flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-black"
+              className="w-full flex items-center justify-center gap-2 text-sm text-ink-muted hover:text-ink"
             >
               <ArrowLeft className="w-4 h-4" />
               返回
@@ -489,34 +489,34 @@ export default function AuthGate({ children }: AuthGateProps) {
       case 'forgot':
         return (
           <form onSubmit={(e) => { e.preventDefault(); sendCode('reset_password'); }} className="space-y-4">
-            <p className="text-sm text-gray-500 text-center mb-4">
+            <p className="text-sm text-ink-muted text-center mb-4">
               输入您的注册邮箱，我们将发送验证码
             </p>
             <div>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-faint" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="邮箱"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                  className="input-field input-pill w-full py-3 pl-10 pr-4"
                   autoFocus
                 />
               </div>
             </div>
-            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+            {error && <p className="text-danger text-sm text-center">{error}</p>}
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary w-full py-3 text-sm"
             >
               {isSubmitting ? '发送中...' : '发送验证码'}
             </button>
             <button
               type="button"
               onClick={() => switchMode('login')}
-              className="w-full flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-black"
+              className="w-full flex items-center justify-center gap-2 text-sm text-ink-muted hover:text-ink"
             >
               <ArrowLeft className="w-4 h-4" />
               返回登录
@@ -527,41 +527,41 @@ export default function AuthGate({ children }: AuthGateProps) {
       case 'forgot-password':
         return (
           <form onSubmit={handleResetPassword} className="space-y-4">
-            <p className="text-sm text-gray-500 text-center mb-4">
+            <p className="text-sm text-ink-muted text-center mb-4">
               设置您的新密码
             </p>
             <div>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-faint" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="新密码"
-                  className="w-full pl-10 pr-10 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                  className="input-field input-pill w-full py-3 pl-10 pr-10"
                   autoFocus
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-ink-faint hover:text-ink"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
-            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+            {error && <p className="text-danger text-sm text-center">{error}</p>}
             <button
               type="submit"
               disabled={isSubmitting || !password}
-              className="w-full py-3 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary w-full py-3 text-sm"
             >
               {isSubmitting ? '重置中...' : '重置密码'}
             </button>
             <button
               type="button"
               onClick={() => switchMode('forgot-verify')}
-              className="w-full flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-black"
+              className="w-full flex items-center justify-center gap-2 text-sm text-ink-muted hover:text-ink"
             >
               <ArrowLeft className="w-4 h-4" />
               返回
@@ -596,14 +596,14 @@ export default function AuthGate({ children }: AuthGateProps) {
             alt="ProductThink"
             className="w-16 h-16 rounded-full mx-auto mb-4"
           />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">{getTitle()}</h1>
-          <p className="text-gray-500">ProductThink · 产品咨询顾问团</p>
+          <h1 className="font-serif text-2xl text-ink mb-2">{getTitle()}</h1>
+          <p className="text-ink-muted">ProductThink · 产品咨询顾问团</p>
         </div>
 
         {renderForm()}
 
-        <p className="mt-6 text-center text-sm text-gray-400">
-          先去 <a href="/explore" className="text-black underline">灵感火花</a> 看看？
+        <p className="mt-6 text-center text-sm text-ink-faint">
+          先去 <a href="/explore" className="u-link text-ink">灵感火花</a> 看看？
         </p>
       </div>
     </div>

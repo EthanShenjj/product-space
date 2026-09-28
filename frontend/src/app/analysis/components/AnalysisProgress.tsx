@@ -19,17 +19,17 @@ export function AnalysisProgress({ analyses, onBack, onViewReport }: AnalysisPro
   return (
     <div className="max-w-4xl mx-auto">
       {/* 进度条 */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
+      <div className="card p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold">多视角分析进行中</h2>
-          <span className="text-sm text-gray-500">
+          <h2 className="font-serif text-lg">多视角分析进行中</h2>
+          <span className="text-sm text-ink-muted tabular-nums">
             {completedCount}/{totalCount} 位专家已完成
           </span>
         </div>
 
-        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div className="metric-track">
           <div
-            className="h-full bg-black rounded-full transition-all duration-500"
+            className="metric-fill"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -43,11 +43,11 @@ export function AnalysisProgress({ analyses, onBack, onViewReport }: AnalysisPro
             return (
               <div
                 key={analysis.expertId}
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium transition-all ${
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-paper text-sm font-medium transition-all ${
                   analysis.status === 'completed'
                     ? ''
                     : analysis.status === 'analyzing'
-                    ? 'ring-2 ring-blue-400 ring-offset-2'
+                    ? 'ring-2 ring-ink/40 ring-offset-2 ring-offset-surface'
                     : 'opacity-40'
                 }`}
                 style={{ backgroundColor: expert.color }}
@@ -68,11 +68,11 @@ export function AnalysisProgress({ analyses, onBack, onViewReport }: AnalysisPro
       </div>
 
       {/* 底部操作 */}
-      <div className="sticky bottom-4 mt-6 bg-white rounded-2xl p-4 shadow-lg border border-gray-100">
+      <div className="sticky bottom-4 mt-6 bg-surface-raised rounded-2xl p-4 shadow-float border border-hairline">
         <div className="flex items-center justify-between">
           <button
             onClick={onBack}
-            className="px-4 py-2 text-gray-600 hover:text-black transition-colors"
+            className="btn-ghost px-4 py-2 text-sm"
           >
             返回修改
           </button>
@@ -80,7 +80,7 @@ export function AnalysisProgress({ analyses, onBack, onViewReport }: AnalysisPro
           <button
             onClick={onViewReport}
             disabled={!allCompleted}
-            className="px-6 py-3 bg-black text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+            className="btn-primary px-6 py-3 text-sm"
           >
             {allCompleted ? '查看完整报告' : '分析中...'}
           </button>

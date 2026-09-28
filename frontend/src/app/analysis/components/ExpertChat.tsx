@@ -25,10 +25,10 @@ export function ExpertChat({ analysis }: ExpertChatProps) {
   if (!expert) return null;
 
   const statusIcon = {
-    pending: <div className="w-5 h-5 rounded-full bg-gray-200" />,
-    analyzing: <Loader2 size={20} className="text-blue-500 animate-spin" />,
-    completed: <CheckCircle size={20} className="text-green-500" />,
-    error: <AlertCircle size={20} className="text-red-500" />,
+    pending: <div className="w-5 h-5 rounded-full bg-hairline-strong" />,
+    analyzing: <Loader2 size={20} className="text-ink-secondary animate-spin" />,
+    completed: <CheckCircle size={20} className="text-score" />,
+    error: <AlertCircle size={20} className="text-danger" />,
   };
 
   const stripAnalysisJson = (raw: string) => {
@@ -84,22 +84,22 @@ export function ExpertChat({ analysis }: ExpertChatProps) {
   const displayText = formatSections(stripAnalysisJson(analysis.analysis || ''));
 
   return (
-    <div className={`bg-white rounded-2xl shadow-sm overflow-hidden transition-all ${
+    <div className={`card overflow-hidden transition-all ${
       analysis.status === 'pending' ? 'opacity-50' : ''
     }`}>
       {/* 头部 */}
-      <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+      <div className="p-4 border-b border-hairline flex items-center justify-between">
         <div className="flex items-center gap-3">
           {expert.avatar ? (
             <img
               src={expert.avatar}
               alt={expert.name}
-              className="w-10 h-10 rounded-full object-cover border border-gray-200"
+              className="w-10 h-10 rounded-full object-cover border border-hairline"
               loading="lazy"
             />
           ) : (
             <div
-              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
+              className="w-10 h-10 rounded-full flex items-center justify-center text-paper font-bold"
               style={{ backgroundColor: expert.color }}
             >
               {expert.name.charAt(0)}
@@ -107,16 +107,16 @@ export function ExpertChat({ analysis }: ExpertChatProps) {
           )}
           <div>
             <h3 className="font-semibold">{expert.name}</h3>
-            <p className="text-sm text-gray-500">{expert.title}</p>
+            <p className="text-sm text-ink-muted">{expert.title}</p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           {analysis.status === 'completed' && analysis.score > 0 && (
             <div className="flex items-center gap-1">
-              <span className="text-yellow-500">★</span>
-              <span className="font-bold">{analysis.score.toFixed(1)}</span>
-              <span className="text-gray-400">/10</span>
+              <span className="text-sticker-yellow">★</span>
+              <span className="font-semibold tabular-nums">{analysis.score.toFixed(1)}</span>
+              <span className="text-ink-faint tabular-nums">/10</span>
             </div>
           )}
           {statusIcon[analysis.status]}
@@ -126,15 +126,15 @@ export function ExpertChat({ analysis }: ExpertChatProps) {
       {/* 内容 */}
       <div ref={contentRef} className="p-4 max-h-96 overflow-y-auto">
         {analysis.status === 'pending' && (
-          <p className="text-gray-400 text-center py-8">等待分析...</p>
+          <p className="text-ink-faint text-center py-8">等待分析...</p>
         )}
 
         {analysis.status === 'error' && (
-          <p className="text-red-500 text-center py-8">分析失败，请重试</p>
+          <p className="text-danger text-center py-8">分析失败，请重试</p>
         )}
 
         {(analysis.status === 'analyzing' || analysis.status === 'completed') && (
-          <div className="prose prose-sm max-w-none text-gray-700 text-[13px] leading-loose prose-pre:whitespace-pre-wrap prose-pre:break-words">
+          <div className="prose prose-sm max-w-none text-ink-secondary text-[13px] leading-loose prose-pre:whitespace-pre-wrap prose-pre:break-words">
             <ReactMarkdown
               remarkPlugins={[remarkGfm, remarkBreaks]}
               components={{
@@ -147,18 +147,18 @@ export function ExpertChat({ analysis }: ExpertChatProps) {
                 ),
                 li: ({ children }) => <li className="mb-0.5">{children}</li>,
                 pre: ({ children }) => (
-                  <pre className="whitespace-pre-wrap break-words overflow-x-auto bg-gray-50 p-3 rounded text-gray-600 leading-loose">
+                  <pre className="whitespace-pre-wrap break-words overflow-x-auto bg-surface-sunken p-3 rounded-lg text-ink-secondary leading-loose">
                     {children}
                   </pre>
                 ),
                 code: ({ children, className }) => {
                   const isBlock = className?.includes('language-');
                   return isBlock ? (
-                    <code className="font-mono text-[0.9em] whitespace-pre-wrap break-words text-gray-700 leading-loose">
+                    <code className="font-mono text-[0.9em] whitespace-pre-wrap break-words text-ink-secondary leading-loose">
                       {children}
                     </code>
                   ) : (
-                    <code className="px-1 py-0.5 rounded bg-gray-100 font-mono text-[0.9em] text-gray-700">
+                    <code className="px-1 py-0.5 rounded bg-surface-sunken font-mono text-[0.9em] text-ink-secondary">
                       {children}
                     </code>
                   );
@@ -174,14 +174,14 @@ export function ExpertChat({ analysis }: ExpertChatProps) {
         {analysis.status === 'completed' && (
           <div className="mt-4 space-y-3">
             {analysis.needsCaseSupplement ? (
-              <div className="bg-gray-50 rounded-lg p-3">
-                <p className="text-xs text-gray-500">案例待补充：稍后我会补充更贴近的真实案例。</p>
+              <div className="bg-surface-sunken rounded-lg p-3">
+                <p className="text-xs text-ink-muted">案例待补充：稍后我会补充更贴近的真实案例。</p>
               </div>
             ) : null}
             {analysis.strengths.length > 0 && (
-              <div className="bg-green-50 rounded-lg p-3">
-                <h4 className="text-sm font-medium text-green-700 mb-2">✅ 优势</h4>
-                <ul className="text-sm text-green-600 space-y-1">
+              <div className="bg-score-bg rounded-lg p-3">
+                <h4 className="text-sm font-medium text-score mb-2">优势</h4>
+                <ul className="text-sm text-score space-y-1">
                   {analysis.strengths.map((s, i) => (
                     <li key={i}>• {s}</li>
                   ))}
@@ -190,9 +190,9 @@ export function ExpertChat({ analysis }: ExpertChatProps) {
             )}
 
             {analysis.risks.length > 0 && (
-              <div className="bg-yellow-50 rounded-lg p-3">
-                <h4 className="text-sm font-medium text-yellow-700 mb-2">⚠️ 风险</h4>
-                <ul className="text-sm text-yellow-600 space-y-1">
+              <div className="bg-warn-bg rounded-lg p-3">
+                <h4 className="text-sm font-medium text-warn mb-2">风险</h4>
+                <ul className="text-sm text-warn space-y-1">
                   {analysis.risks.map((r, i) => (
                     <li key={i}>• {r}</li>
                   ))}
@@ -201,9 +201,9 @@ export function ExpertChat({ analysis }: ExpertChatProps) {
             )}
 
             {analysis.suggestions.length > 0 && (
-              <div className="bg-blue-50 rounded-lg p-3">
-                <h4 className="text-sm font-medium text-blue-700 mb-2">💡 建议</h4>
-                <ul className="text-sm text-blue-600 space-y-1">
+              <div className="bg-info-bg rounded-lg p-3">
+                <h4 className="text-sm font-medium text-info mb-2">建议</h4>
+                <ul className="text-sm text-info space-y-1">
                   {analysis.suggestions.map((s, i) => (
                     <li key={i}>• {s}</li>
                   ))}

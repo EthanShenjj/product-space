@@ -264,18 +264,18 @@ export default function AdminPage() {
     if (!authed) {
         return (
             <div className="min-h-screen flex items-center justify-center px-4">
-                <div className="w-full max-w-sm bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-                    <h1 className="text-xl font-semibold text-gray-900 mb-4">Sparks 管理后台</h1>
-                    <label className="text-sm text-gray-600">管理员密码</label>
+                <div className="w-full max-w-sm card p-6">
+                    <h1 className="font-serif text-xl text-ink mb-4">Sparks 管理后台</h1>
+                    <label className="micro-label block">管理员密码</label>
                     <input
                         type="password"
-                        className="mt-2 w-full border rounded-lg px-3 py-2"
+                        className="input-field mt-2 px-3 py-2"
                         value={password}
                         onChange={event => setPassword(event.target.value)}
                     />
                     <button
                         onClick={login}
-                        className="mt-4 w-full bg-gray-900 text-white rounded-lg py-2 text-sm font-semibold"
+                        className="btn-primary mt-4 w-full py-2 text-sm"
                     >
                         登录
                     </button>
@@ -288,32 +288,32 @@ export default function AdminPage() {
         <div className="max-w-6xl mx-auto px-4 py-8">
             <header className="flex items-center justify-between mb-8">
                 <div>
-                    <h1 className="text-2xl font-semibold text-gray-900">Sparks 管理后台</h1>
-                    <p className="text-sm text-gray-500">上传、编辑、发布</p>
+                    <h1 className="font-serif text-2xl text-ink">Sparks 管理后台</h1>
+                    <p className="text-sm text-ink-muted">上传、编辑、发布</p>
                 </div>
-                <button onClick={logout} className="text-sm text-gray-500 hover:text-gray-900">
+                <button onClick={logout} className="text-sm text-ink-muted hover:text-ink">
                     退出登录
                 </button>
             </header>
 
             <section className="grid lg:grid-cols-[1fr_320px] gap-6 mb-10">
-                <div className="bg-white border border-gray-200 rounded-2xl p-6">
+                <div className="card p-6">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-lg font-semibold">卡片管理</h2>
                         <button
                             onClick={openNewCard}
-                            className="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800"
+                            className="btn-primary px-4 py-2 text-sm"
                         >
                             + 新建卡片
                         </button>
                     </div>
-                    <p className="text-sm text-gray-500">点击下方卡片列表中的"编辑"按钮，或点击右上角新建卡片。</p>
+                    <p className="text-sm text-ink-muted">点击下方卡片列表中的"编辑"按钮，或点击右上角新建卡片。</p>
                 </div>
 
-                <div className="bg-white border border-gray-200 rounded-2xl p-6">
+                <div className="card p-6">
                     <h2 className="text-lg font-semibold mb-4">批量导入</h2>
                     <textarea
-                        className="border rounded-lg px-3 py-2 min-h-[200px] w-full"
+                        className="input-field px-3 py-2 min-h-[200px]"
                         placeholder='JSON 数组格式，例如：[{"title":"...","content":"..."}]'
                         value={bulkJson}
                         onChange={event => setBulkJson(event.target.value)}
@@ -321,25 +321,25 @@ export default function AdminPage() {
                     <button
                         type="button"
                         onClick={handleBulkImport}
-                        className="mt-3 w-full border border-gray-200 rounded-lg py-2 text-sm"
+                        className="btn-secondary mt-3 w-full py-2 text-sm"
                     >
                         导入
                     </button>
                     <button
                         type="button"
                         onClick={syncCards}
-                        className="mt-3 w-full border border-gray-200 rounded-lg py-2 text-sm"
+                        className="btn-secondary mt-3 w-full py-2 text-sm"
                         disabled={syncing}
                     >
                         {syncing ? '同步中…' : '同步待发布 + 已发布'}
                     </button>
                     {syncError ? (
-                        <p className="mt-2 text-xs text-red-500">{syncError}</p>
+                        <p className="mt-2 text-xs text-danger">{syncError}</p>
                     ) : null}
                 </div>
             </section>
 
-            <section className="bg-white border border-gray-200 rounded-2xl p-6">
+            <section className="card p-6">
                 <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                     <h2 className="text-lg font-semibold">卡片列表</h2>
                     <div className="flex gap-2">
@@ -349,8 +349,8 @@ export default function AdminPage() {
                                 onClick={() => setFilter(status as any)}
                                 className={`px-3 py-1.5 text-xs rounded-full border ${
                                     filter === status
-                                        ? 'bg-gray-900 text-white border-gray-900'
-                                        : 'border-gray-200 text-gray-600'
+                                        ? 'bg-ink text-paper border-ink'
+                                        : 'border-hairline text-ink-secondary hover:border-hairline-strong'
                                 }`}
                             >
                                 {status === 'all' ? '全部' : STATUS_LABELS[status as CmsItem['status']]}
@@ -363,9 +363,9 @@ export default function AdminPage() {
                     {filteredItems.map(item => (
                         <div key={item.id} className="py-4 flex flex-col lg:flex-row lg:items-center gap-3">
                             <div className="flex-1">
-                                <div className="text-sm font-semibold text-gray-900">{item.title}</div>
-                                <div className="text-xs text-gray-500 mt-1">{item.content}</div>
-                                <div className="text-xs text-gray-400 mt-1">
+                                <div className="text-sm font-semibold text-ink">{item.title}</div>
+                                <div className="text-xs text-ink-muted mt-1">{item.content}</div>
+                                <div className="text-xs text-ink-faint mt-1">
                                     {item.category} · {item.source || '无来源'} · {STATUS_LABELS[item.status]}
                                 </div>
                             </div>
@@ -374,10 +374,10 @@ export default function AdminPage() {
                                     <>
                                         <button
                                             type="button"
-                                            className={`border border-gray-200 rounded-full px-3 py-1 transition ${
+                                            className={`border border-hairline rounded-full px-3 py-1 transition ${
                                                 activeAction?.id === item.id && activeAction.type === 'edit'
-                                                    ? 'ring-2 ring-gray-400 bg-gray-100'
-                                                    : 'hover:border-gray-400'
+                                                    ? 'ring-2 ring-ink/30 bg-surface-sunken'
+                                                    : 'hover:border-hairline-strong'
                                             }`}
                                             onClick={() => startEdit(item)}
                                         >
@@ -385,10 +385,10 @@ export default function AdminPage() {
                                         </button>
                                         <button
                                             type="button"
-                                            className={`border border-gray-200 rounded-full px-3 py-1 transition ${
+                                            className={`border border-hairline rounded-full px-3 py-1 transition ${
                                                 activeAction?.id === item.id && activeAction.type === 'publish'
-                                                    ? 'ring-2 ring-green-400 bg-green-50'
-                                                    : 'hover:border-gray-400'
+                                                    ? 'ring-2 ring-score/40 bg-score-bg'
+                                                    : 'hover:border-hairline-strong'
                                             }`}
                                             onClick={() => publishItem(item.id, 'published')}
                                             disabled={activeAction?.id === item.id && activeAction.type === 'publish'}
@@ -401,10 +401,10 @@ export default function AdminPage() {
                                     <>
                                         <button
                                             type="button"
-                                            className={`border border-gray-200 rounded-full px-3 py-1 transition ${
+                                            className={`border border-hairline rounded-full px-3 py-1 transition ${
                                                 activeAction?.id === item.id && activeAction.type === 'edit'
-                                                    ? 'ring-2 ring-gray-400 bg-gray-100'
-                                                    : 'hover:border-gray-400'
+                                                    ? 'ring-2 ring-ink/30 bg-surface-sunken'
+                                                    : 'hover:border-hairline-strong'
                                             }`}
                                             onClick={() => startEdit(item)}
                                         >
@@ -412,10 +412,10 @@ export default function AdminPage() {
                                         </button>
                                         <button
                                             type="button"
-                                            className={`border border-gray-200 rounded-full px-3 py-1 transition ${
+                                            className={`border border-hairline rounded-full px-3 py-1 transition ${
                                                 activeAction?.id === item.id && activeAction.type === 'retract'
-                                                    ? 'ring-2 ring-amber-400 bg-amber-50'
-                                                    : 'hover:border-gray-400'
+                                                    ? 'ring-2 ring-warn/40 bg-warn-bg'
+                                                    : 'hover:border-hairline-strong'
                                             }`}
                                             onClick={() => publishItem(item.id, 'pending')}
                                             disabled={activeAction?.id === item.id && activeAction.type === 'retract'}
@@ -426,7 +426,7 @@ export default function AdminPage() {
                                 )}
                                 <button
                                     type="button"
-                                    className="border border-red-200 text-red-500 rounded-full px-3 py-1"
+                                    className="border border-danger/30 text-danger rounded-full px-3 py-1"
                                     onClick={() => deleteItem(item.id)}
                                 >
                                     删除
@@ -439,25 +439,25 @@ export default function AdminPage() {
 
             {/* 编辑/新建卡片弹窗 */}
             {editModalOpen && (
-                <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-                        <div className="flex items-center justify-between p-4 border-b">
-                            <h3 className="text-lg font-semibold">
+                <div className="fixed inset-0 z-50 bg-ink/50 flex items-center justify-center p-4">
+                    <div className="bg-surface-raised rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+                        <div className="flex items-center justify-between p-4 border-b border-hairline">
+                            <h3 className="font-serif text-lg">
                                 {editingId ? '编辑卡片' : '新建卡片'}
                             </h3>
                             <button
                                 type="button"
                                 onClick={closeEditModal}
-                                className="p-2 hover:bg-gray-100 rounded-lg"
+                                className="p-2 hover:bg-surface-sunken rounded-full"
                             >
                                 <X size={20} />
                             </button>
                         </div>
                         <div className="flex-1 p-4 overflow-y-auto space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">标题</label>
+                                <label className="micro-label block mb-1">标题</label>
                                 <input
-                                    className="w-full border rounded-lg px-3 py-2"
+                                    className="input-field px-3 py-2"
                                     placeholder="输入标题"
                                     value={form.title}
                                     onChange={event => setForm({ ...form, title: event.target.value })}
@@ -465,18 +465,18 @@ export default function AdminPage() {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">分类</label>
+                                    <label className="micro-label block mb-1">分类</label>
                                     <input
-                                        className="w-full border rounded-lg px-3 py-2"
+                                        className="input-field px-3 py-2"
                                         placeholder="如：产品沉思录"
                                         value={form.category}
                                         onChange={event => setForm({ ...form, category: event.target.value })}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">来源（可空）</label>
+                                    <label className="micro-label block mb-1">来源（可空）</label>
                                     <input
-                                        className="w-full border rounded-lg px-3 py-2"
+                                        className="input-field px-3 py-2"
                                         placeholder="如：Lenny's Newsletter"
                                         value={form.source}
                                         onChange={event => setForm({ ...form, source: event.target.value })}
@@ -484,9 +484,9 @@ export default function AdminPage() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">标签（逗号分隔）</label>
+                                <label className="micro-label block mb-1">标签（逗号分隔）</label>
                                 <input
-                                    className="w-full border rounded-lg px-3 py-2"
+                                    className="input-field px-3 py-2"
                                     placeholder="如：增长, PMF, 用户留存"
                                     value={form.tags.join(',')}
                                     onChange={event =>
@@ -498,9 +498,9 @@ export default function AdminPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">一句话总结</label>
+                                <label className="micro-label block mb-1">一句话总结</label>
                                 <textarea
-                                    className="w-full border rounded-lg px-3 py-2 min-h-[80px]"
+                                    className="input-field px-3 py-2 min-h-[80px]"
                                     placeholder="用一句话概括这张卡片的核心观点"
                                     value={form.content}
                                     onChange={event => setForm({ ...form, content: event.target.value })}
@@ -508,18 +508,18 @@ export default function AdminPage() {
                             </div>
                             <div>
                                 <div className="flex items-center justify-between mb-1">
-                                    <label className="block text-sm font-medium text-gray-700">全文（可选）</label>
+                                    <label className="micro-label block">全文（可选）</label>
                                     <button
                                         type="button"
                                         onClick={() => setFullscreenEdit(true)}
-                                        className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1"
+                                        className="text-xs text-ink-muted hover:text-ink flex items-center gap-1"
                                     >
                                         <Maximize2 size={12} />
                                         全屏编辑
                                     </button>
                                 </div>
                                 <textarea
-                                    className="w-full border rounded-lg px-3 py-2 min-h-[120px]"
+                                    className="input-field px-3 py-2 min-h-[120px]"
                                     placeholder="详细内容，支持 Markdown 格式"
                                     value={form.fullArticle}
                                     onChange={event => setForm({ ...form, fullArticle: event.target.value })}
@@ -527,10 +527,10 @@ export default function AdminPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">上传图片</label>
-                                <div className="border rounded-lg px-3 py-3 bg-gray-50">
+                                <label className="micro-label block mb-1">上传图片</label>
+                                <div className="border border-hairline rounded-lg px-3 py-3 bg-surface-sunken">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <span className="text-xs text-gray-500">插入位置</span>
+                                        <span className="text-xs text-ink-muted">插入位置</span>
                                         {(['cursor', 'append'] as const).map(mode => (
                                             <button
                                                 key={mode}
@@ -538,8 +538,8 @@ export default function AdminPage() {
                                                 onClick={() => setInsertMode(mode)}
                                                 className={`text-xs px-2 py-1 rounded-full border ${
                                                     insertMode === mode
-                                                        ? 'bg-gray-900 text-white border-gray-900'
-                                                        : 'border-gray-200 text-gray-600 bg-white'
+                                                        ? 'bg-ink text-paper border-ink'
+                                                        : 'border-hairline text-ink-secondary bg-surface-raised'
                                                 }`}
                                             >
                                                 {mode === 'cursor' ? '光标处' : '末尾追加'}
@@ -558,14 +558,14 @@ export default function AdminPage() {
                                             event.currentTarget.value = '';
                                         }}
                                     />
-                                    {uploading && <p className="text-xs text-gray-500 mt-2">上传中…</p>}
-                                    {uploadError && <p className="text-xs text-red-500 mt-2">{uploadError}</p>}
+                                    {uploading && <p className="text-xs text-ink-muted mt-2">上传中…</p>}
+                                    {uploadError && <p className="text-xs text-danger mt-2">{uploadError}</p>}
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">状态</label>
+                                <label className="micro-label block mb-1">状态</label>
                                 <select
-                                    className="w-full border rounded-lg px-3 py-2"
+                                    className="input-field px-3 py-2"
                                     value={form.status}
                                     onChange={event => setForm({ ...form, status: event.target.value as CmsItem['status'] })}
                                 >
@@ -574,25 +574,25 @@ export default function AdminPage() {
                                 </select>
                             </div>
                         </div>
-                        <div className="p-4 border-t flex justify-end gap-3">
+                        <div className="p-4 border-t border-hairline flex justify-end gap-3">
                             <button
                                 type="button"
                                 onClick={closeEditModal}
-                                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
+                                className="btn-ghost px-4 py-2 text-sm"
                             >
                                 取消
                             </button>
                             <button
                                 type="button"
                                 onClick={() => submitForm()}
-                                className="px-4 py-2 text-sm bg-gray-900 text-white rounded-lg"
+                                className="btn-primary px-4 py-2 text-sm"
                             >
                                 {editingId ? '保存修改' : '创建卡片'}
                             </button>
                             <button
                                 type="button"
                                 onClick={() => submitForm('published')}
-                                className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg"
+                                className="px-4 py-2 text-sm bg-score text-paper rounded-full"
                             >
                                 {editingId ? '保存并发布' : '创建并发布'}
                             </button>
@@ -603,21 +603,21 @@ export default function AdminPage() {
 
             {/* 全屏编辑模态框 */}
             {fullscreenEdit && (
-                <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl w-full max-w-4xl h-[90vh] flex flex-col">
-                        <div className="flex items-center justify-between p-4 border-b">
-                            <h3 className="text-lg font-semibold">全文编辑</h3>
+                <div className="fixed inset-0 z-50 bg-ink/50 flex items-center justify-center p-4">
+                    <div className="bg-surface-raised rounded-2xl w-full max-w-4xl h-[90vh] flex flex-col">
+                        <div className="flex items-center justify-between p-4 border-b border-hairline">
+                            <h3 className="font-serif text-lg">全文编辑</h3>
                             <button
                                 type="button"
                                 onClick={() => setFullscreenEdit(false)}
-                                className="p-2 hover:bg-gray-100 rounded-lg"
+                                className="p-2 hover:bg-surface-sunken rounded-full"
                             >
                                 <X size={20} />
                             </button>
                         </div>
                         <div className="flex-1 p-4 overflow-hidden">
                             <textarea
-                                className="w-full h-full border rounded-lg px-4 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-gray-900"
+                                className="input-field w-full h-full px-4 py-3 resize-none"
                                 placeholder="全文内容..."
                                 value={form.fullArticle}
                                 onChange={event => setForm({ ...form, fullArticle: event.target.value })}
@@ -628,14 +628,14 @@ export default function AdminPage() {
                             <button
                                 type="button"
                                 onClick={() => setFullscreenEdit(false)}
-                                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
+                                className="btn-ghost px-4 py-2 text-sm"
                             >
                                 取消
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setFullscreenEdit(false)}
-                                className="px-4 py-2 text-sm bg-gray-900 text-white rounded-lg"
+                                className="btn-primary px-4 py-2 text-sm"
                             >
                                 完成
                             </button>

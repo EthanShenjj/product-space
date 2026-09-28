@@ -145,7 +145,7 @@ export function ReportView({ summary, analyses, userGoal = 'validate', onBack, o
         scale: 2,
         useCORS: true,
         logging: false,
-        backgroundColor: '#f9fafb',
+        backgroundColor: '#ececea',
         onclone: (doc) => {
           const root = doc.querySelector('[data-pdf-root]') as HTMLElement | null;
           if (!root) return;
@@ -327,101 +327,92 @@ export function ReportView({ summary, analyses, userGoal = 'validate', onBack, o
     }
   };
 
-  const getScoreColor = () => 'text-gray-900';
+  const getScoreColor = () => 'text-ink';
 
   return (
     <div ref={reportRef} data-pdf-root className="max-w-4xl mx-auto px-4 md:px-6">
-      {/* 报告头部 */}
-      <div className="bg-white border border-gray-200 text-gray-900 rounded-2xl p-8 mb-6 shadow-sm">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
-              <img src="/bot-avatar.svg" alt="ProductThink" className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">ProductThink 产品诊断报告</h1>
-            <p className="text-gray-500 mt-1">
+      {/* 报告头部 — 对齐参考稿会话分析卡 */}
+      <div className="card p-6 md:p-8 mb-6">
+        <div className="flex items-start justify-between gap-4 pb-5 border-b border-hairline">
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-ink-muted tabular-nums">
               {new Date().toLocaleDateString('zh-CN', {
                 year: 'numeric',
-                month: 'long',
-                day: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
               })}
-            </p>
+            </span>
+            <div>
+              <h1 className="font-serif text-2xl leading-snug">ProductThink 产品诊断报告</h1>
+              <p className="text-xs text-ink-muted mt-1">
+                多视角分析 · {completedAnalyses.length} 位专家{currentGoal ? ` · ${currentGoal.label}` : ''}
+              </p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <span className="bg-score-bg text-score rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums">
+              {Math.round(overallScore * 10)}
+            </span>
             <button
               onClick={handleShare}
-              className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              className="p-2 rounded-full text-ink-muted hover:bg-surface-sunken hover:text-ink transition-colors"
               title="分享"
             >
-              <Share2 size={20} />
+              <Share2 size={18} />
             </button>
             <button
               onClick={handleDownloadPDF}
               disabled={isGeneratingPDF}
-              className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+              className="p-2 rounded-full text-ink-muted hover:bg-surface-sunken hover:text-ink transition-colors disabled:opacity-50"
               title="下载 PDF"
             >
-              {isGeneratingPDF ? <Loader2 size={20} className="animate-spin" /> : <Download size={20} />}
+              {isGeneratingPDF ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
             </button>
           </div>
         </div>
 
-        {/* 用户目标 */}
-        {currentGoal && (
-          <div className="bg-gray-100 rounded-xl px-4 py-2 mb-6 inline-flex items-center gap-2 text-gray-700">
-            <span className="text-xl">{currentGoal.icon}</span>
-            <span className="text-sm">目标：{currentGoal.label}</span>
-          </div>
-        )}
-
         {/* 综合评分 */}
-        <div className="flex items-center gap-6">
-          <div className="text-center">
-            <div className="text-5xl font-bold text-gray-900">
+        <div className="pt-5">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-5xl font-semibold text-ink tabular-nums leading-none">
               {overallScore.toFixed(1)}
-            </div>
-            <div className="text-gray-500 text-sm mt-1">综合评分</div>
+            </span>
+            <span className="micro-label">综合评分 / 10</span>
           </div>
-          <div className="flex-1">
-            <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all bg-gray-900"
-                style={{ width: `${overallScore * 10}%` }}
-              />
-            </div>
-            <div className="flex justify-between text-xs text-gray-400 mt-1">
-              <span>0</span>
-              <span>10</span>
-            </div>
+          <div className="metric-track">
+            <div
+              className="metric-fill"
+              style={{ width: `${overallScore * 10}%` }}
+            />
           </div>
+          <div className="flex justify-between text-xs text-ink-faint mt-1 tabular-nums">
+            <span>0</span>
+            <span>10</span>
+          </div>
+          <p className="mt-4 text-sm text-ink-secondary leading-relaxed">
+            {getScoreRationale()}
+          </p>
         </div>
-        <p className="mt-4 text-sm text-gray-600 leading-relaxed">
-          {getScoreRationale()}
-        </p>
       </div>
 
       {/* 本周行动 - 新增重点板块 */}
       {allActionItems.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-6 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <CheckCircle2 size={24} className="text-gray-900" />
-            <h2 className="text-xl font-bold">本周行动清单</h2>
-          </div>
-          <p className="text-gray-500 text-sm mb-4">
+        <div className="card p-6 mb-6">
+          <div className="micro-label mb-2">Action items</div>
+          <h2 className="font-serif text-xl mb-4">本周行动清单</h2>
+          <p className="text-ink-muted text-sm mb-4">
             根据你的目标「{currentGoal?.label}」，专家们建议你本周优先执行以下行动：
           </p>
           <div className="space-y-3">
             {allActionItems.slice(0, 5).map((item, i) => (
               <div
                 key={i}
-                className="bg-gray-50 rounded-xl p-4 flex items-start gap-3"
+                className="bg-surface-sunken rounded-xl p-4 flex items-start gap-3"
               >
-                <div className="w-6 h-6 bg-gray-900 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
+                <div className="w-6 h-6 bg-ink text-paper rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 tabular-nums">
                   {i + 1}
                 </div>
-                <p className="text-sm leading-relaxed text-gray-700">{item}</p>
+                <p className="text-sm leading-relaxed text-ink-secondary">{item}</p>
               </div>
             ))}
           </div>
@@ -429,34 +420,35 @@ export function ReportView({ summary, analyses, userGoal = 'validate', onBack, o
       )}
 
       {/* 产品概要 */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
-        <h2 className="text-lg font-bold mb-4">产品概要</h2>
-        <div className="bg-gray-50 rounded-xl p-4">
-          <p className="text-gray-700 whitespace-pre-wrap">{summary.product || '暂无产品描述'}</p>
+      <div className="card p-6 mb-6">
+        <div className="micro-label mb-3">Product brief</div>
+        <div className="bg-surface-sunken rounded-xl p-4">
+          <p className="text-ink whitespace-pre-wrap">{summary.product || '暂无产品描述'}</p>
         </div>
       </div>
 
       {/* 访问链接 */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
-        <h2 className="text-lg font-bold mb-2">继续体验 ProductThink</h2>
-        <p className="text-sm text-gray-600">
-          点击进入：<span className="font-medium">productthink.vivi.wiki</span>
+      <div className="card p-6 mb-6">
+        <h2 className="text-lg font-semibold mb-2">继续体验 ProductThink</h2>
+        <p className="text-sm text-ink-secondary">
+          点击进入：<span className="font-medium u-link">productthink.vivi.wiki</span>
         </p>
       </div>
 
       {/* 专家评分 */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
-        <h2 className="text-lg font-bold mb-4">专家评分</h2>
+      <div className="card p-6 mb-6">
+        <div className="micro-label mb-2">Expert scores</div>
+        <h2 className="font-serif text-xl mb-4">专家评分</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {completedAnalyses.map((analysis) => {
             const expert = getExpertById(analysis.expertId);
             if (!expert) return null;
 
             return (
-              <div key={analysis.expertId} className="bg-gray-50 rounded-xl p-4">
+              <div key={analysis.expertId} className="bg-surface-sunken rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium overflow-hidden"
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-paper text-sm font-medium overflow-hidden"
                     style={{ backgroundColor: expert.color }}
                   >
                     {expert.avatar ? (
@@ -469,12 +461,12 @@ export function ReportView({ summary, analyses, userGoal = 'validate', onBack, o
                       expert.name.charAt(0)
                     )}
                   </div>
-                  <span className="font-medium">{expert.name}</span>
+                  <span className="font-medium text-ink">{expert.name}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="metric-track flex-1">
                     <div
-                      className="h-full rounded-full bg-gray-900"
+                      className="metric-fill"
                       style={{ width: `${analysis.score * 10}%` }}
                     />
                   </div>
@@ -482,7 +474,7 @@ export function ReportView({ summary, analyses, userGoal = 'validate', onBack, o
                     {analysis.score.toFixed(1)}
                   </span>
                 </div>
-                <p className="mt-2 text-xs text-gray-500 leading-relaxed">
+                <p className="mt-2 text-xs text-ink-muted leading-relaxed">
                   {getExpertScoreRationale(expert.category, analysis.score)}
                 </p>
               </div>
@@ -494,35 +486,35 @@ export function ReportView({ summary, analyses, userGoal = 'validate', onBack, o
       {/* 核心洞察 */}
       <div className="grid md:grid-cols-3 gap-4 mb-6">
         {/* 优势 */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-6">
-          <h3 className="font-bold text-gray-900 mb-4">核心优势</h3>
+        <div className="bg-score-bg rounded-2xl p-6">
+          <h3 className="text-sm font-semibold text-score mb-4">核心优势</h3>
           <ul className="space-y-2">
             {allStrengths.slice(0, 5).map((s, i) => (
-              <li key={i} className="text-sm text-gray-700">
-                • {s}
+              <li key={i} className="text-sm text-ink-secondary">
+                {s}
               </li>
             ))}
           </ul>
         </div>
 
         {/* 风险 */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-6">
-          <h3 className="font-bold text-gray-900 mb-4">主要风险</h3>
+        <div className="bg-warn-bg rounded-2xl p-6">
+          <h3 className="text-sm font-semibold text-warn mb-4">主要风险</h3>
           <ul className="space-y-2">
             {allRisks.slice(0, 5).map((r, i) => (
-              <li key={i} className="text-sm text-gray-700">
-                • {r}
+              <li key={i} className="text-sm text-ink-secondary">
+                {r}
               </li>
             ))}
           </ul>
         </div>
 
         {/* 建议 */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-6">
-          <h3 className="font-bold text-gray-900 mb-4">策略建议</h3>
+        <div className="bg-info-bg rounded-2xl p-6">
+          <h3 className="text-sm font-semibold text-info mb-4">策略建议</h3>
           <ul className="space-y-2">
             {allSuggestions.slice(0, 5).map((s, i) => (
-              <li key={i} className="text-sm text-gray-700">
+              <li key={i} className="text-sm text-ink-secondary">
                 {i + 1}. {s}
               </li>
             ))}
@@ -531,18 +523,19 @@ export function ReportView({ summary, analyses, userGoal = 'validate', onBack, o
       </div>
 
       {/* 详细分析 */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
-        <h2 className="text-lg font-bold mb-4">详细分析</h2>
+      <div className="card p-6 mb-6">
+        <div className="micro-label mb-2">Full analysis</div>
+        <h2 className="font-serif text-xl mb-4">详细分析</h2>
         <div className="space-y-6">
           {completedAnalyses.map((analysis) => {
             const expert = getExpertById(analysis.expertId);
             if (!expert) return null;
 
             return (
-              <div key={analysis.expertId} className="border-b border-gray-100 pb-6 last:border-0">
+              <div key={analysis.expertId} className="border-b border-hairline pb-6 last:border-0">
                 <div className="flex items-center gap-3 mb-3">
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold overflow-hidden"
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-paper font-bold overflow-hidden"
                     style={{ backgroundColor: expert.color }}
                   >
                     {expert.avatar ? (
@@ -557,23 +550,23 @@ export function ReportView({ summary, analyses, userGoal = 'validate', onBack, o
                   </div>
                   <div>
                     <h3 className="font-semibold">{expert.name}</h3>
-                    <p className="text-sm text-gray-500">{expert.title}</p>
+                    <p className="text-sm text-ink-muted">{expert.title}</p>
                   </div>
                   <div className="ml-auto flex items-center gap-1">
-                    <span className="text-gray-400">★</span>
-                    <span className="font-bold">{analysis.score.toFixed(1)}</span>
+                    <span className="text-sticker-yellow">★</span>
+                    <span className="font-semibold tabular-nums">{analysis.score.toFixed(1)}</span>
                   </div>
                 </div>
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="text-xs text-gray-500 mb-3">
+                <div className="bg-surface-sunken rounded-xl p-4">
+                  <p className="text-xs text-ink-muted mb-3">
                     {getExpertScoreRationale(expert.category, analysis.score)}
                   </p>
                   {isGeneratingPDF ? (
-                    <div className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                    <div className="text-sm text-ink-secondary whitespace-pre-wrap leading-relaxed">
                       {stripJsonBlocks(analysis.analysis)}
                     </div>
                   ) : (
-                    <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed">
+                    <div className="prose prose-sm max-w-none text-ink-secondary leading-relaxed">
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm, remarkBreaks]}
                         components={{
@@ -586,18 +579,18 @@ export function ReportView({ summary, analyses, userGoal = 'validate', onBack, o
                           ),
                           li: ({ children }) => <li className="mb-0.5">{children}</li>,
                           pre: ({ children }) => (
-                            <pre className="whitespace-pre-wrap break-words overflow-x-auto bg-gray-100 p-3 rounded text-gray-600 leading-relaxed">
+                            <pre className="whitespace-pre-wrap break-words overflow-x-auto bg-surface-raised p-3 rounded-lg text-ink-secondary leading-relaxed">
                               {children}
                             </pre>
                           ),
                           code: ({ children, className }) => {
                             const isBlock = className?.includes('language-');
                             return isBlock ? (
-                              <code className="font-mono text-[0.9em] whitespace-pre-wrap break-words text-gray-700 leading-relaxed">
+                              <code className="font-mono text-[0.9em] whitespace-pre-wrap break-words text-ink-secondary leading-relaxed">
                                 {children}
                               </code>
                             ) : (
-                              <code className="px-1 py-0.5 rounded bg-gray-100 font-mono text-[0.9em] text-gray-700">
+                              <code className="px-1 py-0.5 rounded bg-surface-raised font-mono text-[0.9em] text-ink-secondary">
                                 {children}
                               </code>
                             );
@@ -619,11 +612,11 @@ export function ReportView({ summary, analyses, userGoal = 'validate', onBack, o
       </div>
 
       {/* 底部操作 */}
-      <div data-action-bar className="sticky bottom-4 bg-white rounded-2xl p-4 shadow-lg border border-gray-100">
+      <div data-action-bar className="sticky bottom-4 bg-surface-raised rounded-2xl p-4 shadow-float border border-hairline">
         <div className="flex items-center justify-between">
           <button
             onClick={onBack}
-            className="px-4 py-2 text-gray-600 hover:text-black transition-colors"
+            className="btn-ghost px-4 py-2 text-sm"
           >
             重新分析
           </button>
@@ -632,14 +625,14 @@ export function ReportView({ summary, analyses, userGoal = 'validate', onBack, o
             <button
               onClick={handleDownloadPDF}
               disabled={isGeneratingPDF}
-              className="px-4 py-2 border border-gray-200 rounded-xl hover:border-gray-300 transition-colors flex items-center gap-2 disabled:opacity-50"
+              className="btn-secondary px-4 py-2 text-sm"
             >
               {isGeneratingPDF ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
               {isGeneratingPDF ? '生成中...' : '下载 PDF'}
             </button>
             <button
               onClick={onContinueChat}
-              className="px-6 py-3 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition-colors flex items-center gap-2"
+              className="btn-primary px-6 py-3 text-sm"
             >
               <MessageSquare size={18} />
               继续对话

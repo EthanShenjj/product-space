@@ -108,9 +108,9 @@ function ChatContent() {
             />
 
             {toast ? (
-                <div className="fixed left-1/2 top-20 z-50 -translate-x-1/2 rounded-full bg-black text-white px-4 py-2 text-xs shadow-lg">
+                <div className="fixed left-1/2 top-20 z-50 -translate-x-1/2 rounded-full bg-ink text-paper px-4 py-2 text-xs shadow-float">
                     <span className="font-semibold">{toast.title}</span>
-                    <span className="ml-2 text-gray-300">{toast.body}</span>
+                    <span className="ml-2 text-paper/70">{toast.body}</span>
                 </div>
             ) : null}
         </div>

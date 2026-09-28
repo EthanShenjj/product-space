@@ -42,21 +42,21 @@ export default function AnalysisPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black" />
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-ink" />
       </div>
     );
   }
 
   if (!summary || !summary.product) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-bold mb-4">暂无产品信息</h2>
-          <p className="text-gray-500 mb-6">请先在对话中描述你的产品</p>
+          <h2 className="font-serif text-xl font-semibold mb-4">暂无产品信息</h2>
+          <p className="text-ink-muted mb-6">请先在对话中描述你的产品</p>
           <Link
             href="/chat"
-            className="px-6 py-3 bg-black text-white rounded-xl font-medium hover:bg-gray-800 transition-colors"
+            className="btn-primary px-6 py-3 text-sm"
           >
             开始对话
           </Link>
@@ -66,14 +66,14 @@ export default function AnalysisPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* 顶部导航 */}
-      <div className="bg-white border-b border-gray-100">
+      <div className="bg-surface border-b border-hairline">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link href="/chat" className="text-gray-400 hover:text-black transition-colors">
+          <Link href="/chat" className="text-ink-faint hover:text-ink transition-colors">
             <ArrowLeft size={20} />
           </Link>
-          <h1 className="text-xl font-bold">多视角分析</h1>
+          <h1 className="font-serif text-xl">多视角分析</h1>
         </div>
       </div>
 

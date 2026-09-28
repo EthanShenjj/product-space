@@ -65,9 +65,9 @@ export function Sidebar({ stageConfig, summary, isSummarizing, currentStage, can
 
     return (
         <aside className="fixed right-4 top-20 bottom-4 z-30 hidden w-80 flex-col gap-4 overflow-y-auto pr-1 xl:flex">
-            {/* 阶段进度 - 更清晰的步骤指示器 */}
-            <div className="border border-gray-100 bg-white rounded-2xl p-4">
-                <div className="text-sm font-semibold text-gray-900 mb-4">对话进度</div>
+            {/* 阶段进度 */}
+            <div className="card border border-hairline p-4">
+                <div className="text-sm font-semibold text-ink mb-4">对话进度</div>
 
                 <div className="space-y-3">
                     {STAGES.map((stage, index) => {
@@ -79,31 +79,31 @@ export function Sidebar({ stageConfig, summary, isSummarizing, currentStage, can
                             <div
                                 key={stage.key}
                                 className={clsx(
-                                    "flex items-start gap-3 p-2 rounded-lg transition-colors",
-                                    isCurrent && "bg-gray-50",
+                                    "flex items-start gap-3 p-2 rounded-xl transition-colors",
+                                    isCurrent && "bg-surface-sunken",
                                 )}
                             >
                                 <div className="mt-0.5">
                                     {isCompleted ? (
-                                        <CheckCircle2 size={18} className="text-green-500" />
+                                        <CheckCircle2 size={18} className="text-score" />
                                     ) : isCurrent ? (
-                                        <Circle size={18} className="text-black fill-black" />
+                                        <Circle size={18} className="text-ink fill-ink" />
                                     ) : (
-                                        <Lock size={18} className="text-gray-300" />
+                                        <Lock size={18} className="text-ink-faint" />
                                     )}
                                 </div>
                                 <div className="flex-1">
                                     <div className={clsx(
                                         "text-sm font-medium",
-                                        isCompleted && "text-green-600",
-                                        isCurrent && "text-gray-900",
-                                        isLocked && "text-gray-400",
+                                        isCompleted && "text-score",
+                                        isCurrent && "text-ink",
+                                        isLocked && "text-ink-faint",
                                     )}>
                                         {stage.label}
                                     </div>
                                     <div className={clsx(
                                         "text-xs mt-0.5",
-                                        isLocked ? "text-gray-300" : "text-gray-500",
+                                        isLocked ? "text-ink-faint" : "text-ink-muted",
                                     )}>
                                         {stage.description}
                                     </div>
@@ -115,43 +115,43 @@ export function Sidebar({ stageConfig, summary, isSummarizing, currentStage, can
             </div>
 
             {/* 当前阶段详情 */}
-            <div className="border border-gray-100 bg-white rounded-2xl p-4">
+            <div className="card border border-hairline p-4">
                 <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-semibold text-gray-900">{stageConfig.label}</span>
-                    <span className="text-xs text-gray-400">进行中</span>
+                    <span className="text-sm font-semibold text-ink">{stageConfig.label}</span>
+                    <span className="text-xs text-ink-faint">进行中</span>
                 </div>
-                <div className="text-xs text-gray-600 mb-3">{stageConfig.goal}</div>
-                <div className="space-y-2 text-xs text-gray-700">
+                <div className="text-xs text-ink-secondary mb-3">{stageConfig.goal}</div>
+                <div className="space-y-2 text-xs text-ink-secondary">
                     {stageConfig.checklist.map((item) => (
                         <div key={item.label} className="flex items-center gap-2">
                             <span className={clsx(
                                 "inline-flex h-2 w-2 rounded-full",
-                                item.done ? "bg-green-500" : "bg-gray-300"
+                                item.done ? "bg-score" : "bg-hairline-strong"
                             )} />
-                            <span className={item.done ? "text-gray-900" : "text-gray-500"}>
+                            <span className={item.done ? "text-ink" : "text-ink-muted"}>
                                 {item.label}
                             </span>
                         </div>
                     ))}
                 </div>
-                <div className="mt-3 text-xs text-gray-500">{stageConfig.takeaway}</div>
+                <div className="mt-3 text-xs text-ink-muted">{stageConfig.takeaway}</div>
             </div>
 
-            {/* 多视角分析入口 - 弱化视觉权重 */}
-            <div className="border border-gray-100 bg-white rounded-2xl p-4">
+            {/* 多视角分析入口 */}
+            <div className="card border border-hairline p-4">
                 <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                        <Users size={16} className={canStartAnalysis ? "text-gray-700" : "text-gray-300"} />
-                        <span className="text-sm font-semibold text-gray-900">多视角分析</span>
+                        <Users size={16} className={canStartAnalysis ? "text-ink" : "text-ink-faint"} />
+                        <span className="text-sm font-semibold text-ink">多视角分析</span>
                     </div>
                     <span className={clsx(
                         "text-xs",
-                        canStartAnalysis ? "text-green-600" : "text-gray-400"
+                        canStartAnalysis ? "text-score" : "text-ink-faint"
                     )}>
                         {canStartAnalysis ? "可进入" : "未解锁"}
                     </span>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-ink-muted">
                     {canStartAnalysis ? "准备好后即可生成完整诊断报告。" : "再聊几轮关键问题，保证建议更贴合。"}
                 </p>
                 <div className="mt-3 flex items-center gap-2">
@@ -161,52 +161,52 @@ export function Sidebar({ stageConfig, summary, isSummarizing, currentStage, can
                         className={clsx(
                             "text-xs px-3 py-1.5 rounded-full border transition-colors",
                             canStartAnalysis
-                                ? "border-gray-300 text-gray-700 hover:border-gray-400"
-                                : "border-gray-200 text-gray-400 cursor-not-allowed"
+                                ? "border-hairline-strong bg-surface-raised text-ink hover:border-ink/30"
+                                : "border-hairline text-ink-faint cursor-not-allowed"
                         )}
                     >
                         进入多视角分析
                     </button>
                     {!canStartAnalysis && remainingTurns > 0 ? (
-                        <span className="text-xs text-gray-400">还需 {remainingTurns} 轮追问</span>
+                        <span className="text-xs text-ink-faint">还需 {remainingTurns} 轮追问</span>
                     ) : null}
                 </div>
             </div>
 
             {/* Summary */}
-            <div className="border border-gray-100 bg-white rounded-2xl p-4">
+            <div className="card border border-hairline p-4">
                 <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-semibold text-gray-900">对话实时总结</span>
-                    <span className="text-xs text-gray-400">{isSummarizing ? '更新中...' : '已同步'}</span>
+                    <span className="text-sm font-semibold text-ink">对话实时总结</span>
+                    <span className="text-xs text-ink-faint">{isSummarizing ? '更新中...' : '已同步'}</span>
                 </div>
 
-                <div className="space-y-4 text-xs text-gray-700">
+                <div className="space-y-4 text-xs text-ink-secondary">
                     <div>
-                        <div className="text-[11px] font-semibold text-gray-500 mb-1">产品情况</div>
+                        <div className="micro-label mb-1">产品情况</div>
                         <div className="whitespace-pre-wrap leading-relaxed">{summary.product}</div>
                     </div>
                     <div>
-                        <div className="text-[11px] font-semibold text-gray-500 mb-1">AI 的建议</div>
+                        <div className="micro-label mb-1">AI 的建议</div>
                         <div className="whitespace-pre-wrap leading-relaxed">{summary.aiAdvice}</div>
                     </div>
                     <div>
-                        <div className="text-[11px] font-semibold text-gray-500 mb-1">用户的评论</div>
+                        <div className="micro-label mb-1">用户的评论</div>
                         <div className="whitespace-pre-wrap leading-relaxed">{summary.userNotes}</div>
                     </div>
                 </div>
             </div>
 
             {/* Cases */}
-            <div className="border border-gray-100 bg-white rounded-2xl p-4">
-                <div className="text-sm font-semibold text-gray-900 mb-3">案例/对标推荐</div>
+            <div className="card border border-hairline p-4">
+                <div className="text-sm font-semibold text-ink mb-3">案例/对标推荐</div>
                 {normalizeCases().length === 0 ? (
-                    <div className="text-xs text-gray-400">暂时没有推荐，聊得更具体后会补充。</div>
+                    <div className="text-xs text-ink-faint">暂时没有推荐，聊得更具体后会补充。</div>
                 ) : (
-                    <div className="space-y-3 text-xs text-gray-700">
+                    <div className="space-y-3 text-xs text-ink-secondary">
                         {normalizeCases().map((item, index) => (
-                            <div key={`${item.name}-${index}`} className="border-l-2 border-gray-200 pl-3">
-                                <div className="font-semibold text-gray-800">{item.name}</div>
-                                <div className="text-gray-500 mt-1">{item.reason}</div>
+                            <div key={`${item.name}-${index}`} className="border-l-2 border-hairline-strong pl-3">
+                                <div className="font-semibold text-ink">{item.name}</div>
+                                <div className="text-ink-muted mt-1">{item.reason}</div>
                             </div>
                         ))}
                     </div>

@@ -15,16 +15,16 @@ const phases: { key: Stage; label: string }[] = [
 
 export function PhaseIndicator({ currentStage }: PhaseIndicatorProps) {
     return (
-        <div className="p-4 border-b border-gray-100 bg-white sticky top-0 z-10">
-            <div className="flex items-center gap-4 text-sm text-gray-500">
+        <div className="p-4 border-b border-hairline bg-surface/95 backdrop-blur sticky top-0 z-10">
+            <div className="flex items-center gap-5 text-sm text-ink-muted">
                 {phases.map((phase) => (
                     <span
                         key={phase.key}
                         className={clsx(
-                            "pb-1 border-b-2",
+                            "pb-1 border-b-2 transition-colors",
                             currentStage === phase.key
-                                ? "text-black font-bold border-black"
-                                : "text-gray-400 border-transparent"
+                                ? "text-ink font-semibold border-ink"
+                                : "text-ink-faint border-transparent"
                         )}
                     >
                         {phase.label}
