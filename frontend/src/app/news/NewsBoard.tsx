@@ -59,6 +59,7 @@ function SourceSection({ edition, date, category, search }: { edition: NewsEditi
         </div>
       </div>
       {edition.items.length > 0 && (stale || ['error', 'unconfigured'].includes(edition.status)) ? <p className="mb-4 rounded-xl bg-surface px-4 py-3 text-sm text-ink-secondary">{edition.message || '今日榜单尚未更新'}，当前展示上次成功采集的内容。</p> : null}
+      {edition.items.length > 0 && !stale && edition.status === 'ready' && edition.message ? <p className="mb-4 rounded-xl bg-surface px-4 py-3 text-sm text-ink-secondary">{edition.message}</p> : null}
       {items.length ? (
         <div className="news-card-grid grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">{items.map(({ product, rank }) => <ProductCard key={product.id} product={product} rank={rank} />)}</div>
       ) : (

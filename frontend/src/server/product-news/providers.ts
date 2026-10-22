@@ -7,6 +7,8 @@ const collectionPattern = /(?:^|[/\s_-])(awesome|tutorials?|courses?|interview|r
 const categoryFor = (text: string) => aiPattern.test(text) ? 'ai' as const : 'software' as const;
 const count = z.number().nonnegative().default(0);
 
+export type ProviderResult = NewsProduct[] | { items: NewsProduct[]; message?: string };
+
 export class SourceError extends Error {
   constructor(public status: 'unconfigured' | 'error', message: string) { super(message); }
 }
@@ -59,7 +61,7 @@ const githubSchema = z.object({
 
 export function parseGithub(input: unknown): NewsProduct[] {
   const response = githubSchema.parse(input);
-  if (response.incomplete_results) throw new SourceError('error', 'GitHub 搜索暂未完成，保留上次榜单');
+  if (response.incomplete_results && !response.items.length) throw new SourceError('error', 'GitHub 搜索暂未完成，保留上次榜单');
   return topProducts(response.items.flatMap(repo => {
     const text = `${repo.name} ${repo.description || ''} ${repo.topics.join(' ')}`;
     if (!safeHttpUrl(repo.html_url) || !repo.language || repo.archived || repo.fork || collectionPattern.test(repo.name) || (!aiPattern.test(text) && !softwarePattern.test(text))) return [];
@@ -69,7 +71,7 @@ export function parseGithub(input: unknown): NewsProduct[] {
   }));
 }
 
-async function github(now: Date): Promise<NewsProduct[]> {
+async function github(now: Date): Promise<ProviderResult> {
   const since = new Date(now.getTime() - 86_400_000).toISOString();
   const headers = {
     Accept: 'application/vnd.github+json', 'User-Agent': 'ProductThink-News',
@@ -77,15 +79,23 @@ async function github(now: Date): Promise<NewsProduct[]> {
   };
   // Repository search does not implement grouped OR topic expressions. Search
   // independently and merge; each topic's top five is sufficient for the union's top five.
-  const results = await Promise.all(['ai', 'llm', 'saas', 'developer-tools', 'productivity', 'automation'].map(async topic => {
+  const results = await Promise.allSettled(['ai', 'llm', 'saas', 'developer-tools', 'productivity', 'automation'].map(async topic => {
     const url = new URL('https://api.github.com/search/repositories');
     url.search = new URLSearchParams({
       q: `topic:${topic} pushed:>=${since} archived:false fork:false stars:>=10`,
       sort: 'stars', order: 'desc', per_page: '100',
     }).toString();
-    return parseGithub(await requestJson(url.href, { headers }));
+    const response = githubSchema.parse(await requestJson(url.href, { headers }));
+    return { items: parseGithub(response), incomplete: response.incomplete_results };
   }));
-  return topProducts(results.flat());
+  const available = results.flatMap(result => result.status === 'fulfilled' ? [result.value] : []);
+  const items = topProducts(available.flatMap(result => result.items));
+  const failed = results.find(result => result.status === 'rejected');
+  if (!items.length && failed?.status === 'rejected') throw failed.reason;
+  return {
+    items,
+    message: failed || available.some(result => result.incomplete) ? 'GitHub 部分主题搜索未返回完整候选，当前按已返回的产品排序。' : undefined,
+  };
 }
 
 const phSchema = z.object({
@@ -173,4 +183,4 @@ async function x(now: Date): Promise<NewsProduct[]> {
   return parseX(await requestJson(url.href, { headers: { Authorization: `Bearer ${token}` } }));
 }
 
-export const providers: Record<NewsSource, (now: Date) => Promise<NewsProduct[]>> = { x, producthunt, github };
+export const providers: Record<NewsSource, (now: Date) => Promise<ProviderResult>> = { x, producthunt, github };

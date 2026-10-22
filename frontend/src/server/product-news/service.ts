@@ -1,5 +1,5 @@
-import { NEWS_SOURCES, emptyEdition, newsDate, type NewsEdition, type NewsFeed, type NewsProduct, type NewsSource } from '@/lib/product-news';
-import { providers, SourceError, topProducts } from './providers';
+import { NEWS_SOURCES, emptyEdition, newsDate, type NewsEdition, type NewsFeed, type NewsSource } from '@/lib/product-news';
+import { providers, SourceError, topProducts, type ProviderResult } from './providers';
 import { createNewsStore, type NewsStore } from './store';
 
 interface SyncOptions {
@@ -7,7 +7,7 @@ interface SyncOptions {
   force?: boolean;
   sources?: NewsSource[];
   store?: NewsStore;
-  fetchers?: Record<NewsSource, (now: Date) => Promise<NewsProduct[]>>;
+  fetchers?: Record<NewsSource, (now: Date) => Promise<ProviderResult>>;
 }
 
 // A publishing window starts at 09:00 Asia/Shanghai (01:00 UTC).
@@ -54,9 +54,11 @@ export async function syncNews(options: SyncOptions = {}) {
     if (options.sources && !options.sources.includes(source)) return null;
     if (!options.force && isCurrent(previous, now)) return null;
     try {
-      const items = topProducts(await fetchers[source](now));
+      const result = await fetchers[source](now);
+      const items = topProducts(Array.isArray(result) ? result : result.items);
+      const note = Array.isArray(result) ? '' : result.message || '';
       return { source, items, editionDate: date, fetchedAt: now.toISOString(), attemptedAt: now.toISOString(),
-        status: items.length ? 'ready' : 'empty', message: items.length ? '' : '近 24 小时暂未发现符合条件的产品' };
+        status: items.length ? 'ready' : 'empty', message: items.length ? note : '近 24 小时暂未发现符合条件的产品' };
     } catch (error) {
       return { ...previous, attemptedAt: now.toISOString(),
         status: error instanceof SourceError ? error.status : 'error',

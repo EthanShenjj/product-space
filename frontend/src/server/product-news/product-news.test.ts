@@ -46,6 +46,7 @@ describe('normalization and ranking', () => {
     const repo = { id: 1, name: 'tool', full_name: 'maker/tool', html_url: 'https://github.com/maker/tool', description: 'AI app', stargazers_count: 150, language: 'TypeScript', topics: ['ai'], archived: false, fork: false, owner: { login: 'maker' } };
     expect(parseGithub({ items: [repo, { ...repo, id: 2, name: 'awesome-ai' }, { ...repo, id: 3, fork: true }, { ...repo, id: 4, archived: true }, { ...repo, id: 5, language: null }] })).toEqual([expect.objectContaining({ id: '1', category: 'ai', score: 150 })]);
     expect(() => parseGithub({ items: [], incomplete_results: true })).toThrow();
+    expect(parseGithub({ items: [repo], incomplete_results: true })).toHaveLength(1);
   });
   it('filters Product Hunt nonsoftware entries and handles GraphQL errors', () => {
     const post = { id: '1', name: 'Desk', tagline: 'A wooden desk', url: 'https://www.producthunt.com/posts/desk', website: 'https://desk.example.com', votesCount: 500, topics: { nodes: [{ name: 'Furniture', slug: 'furniture' }] } };
@@ -106,17 +107,33 @@ describe('daily synchronization', () => {
       description: 'AI software', stargazers_count: 200, language: 'TypeScript', topics: ['ai'], archived: false, fork: false, owner: { login: 'maker' },
     }] }), { status: 200 }));
     vi.stubGlobal('fetch', request);
-    expect(await providers.github(now)).toHaveLength(1);
+    expect(await providers.github(now)).toMatchObject({ items: [expect.objectContaining({ id: '1' })] });
     expect(request).toHaveBeenCalledTimes(6);
     for (const [url] of request.mock.calls as unknown as [string][]) {
       expect(new URL(url).searchParams.get('q')).toMatch(/^topic:[\w-]+ pushed:>=2026-10-20T01:00:00.000Z/);
       expect(new URL(url).searchParams.get('q')).not.toContain(' OR ');
     }
   });
+  it('keeps available GitHub topics when another topic is unavailable', async () => {
+    const request = vi.fn(async (url: string) => {
+      if (new URL(url).searchParams.get('q')?.startsWith('topic:saas ')) return new Response('{}', { status: 503 });
+      return new Response(JSON.stringify({ incomplete_results: true, items: [{
+        id: 1, name: 'app', full_name: 'maker/app', html_url: 'https://github.com/maker/app', description: 'AI app',
+        stargazers_count: 100, language: 'TypeScript', topics: ['ai'], archived: false, fork: false, owner: { login: 'maker' },
+      }] }), { status: 200 });
+    });
+    vi.stubGlobal('fetch', request);
+    expect(await providers.github(now)).toMatchObject({ items: [expect.objectContaining({ id: '1' })], message: expect.stringContaining('未返回完整候选') });
+  });
   it('does not report success when persistence fails', async () => {
     const store = memoryStore();
     store.write.mockRejectedValue(new Error('database unavailable'));
     await expect(syncNews({ now, store, fetchers: fetchers() })).rejects.toThrow('database unavailable');
+  });
+  it('preserves a provider completeness note alongside usable products', async () => {
+    const sourceFetchers = { ...fetchers(), github: vi.fn(async () => ({ items: [product('github')], message: '部分候选不完整' })) };
+    const result = await syncNews({ now, store: memoryStore(), fetchers: sourceFetchers });
+    expect(result.editions.find(edition => edition.source === 'github')).toMatchObject({ status: 'ready', message: '部分候选不完整' });
   });
   it('considers unconfigured sources separately from failures when a live source succeeds', async () => {
     const sourceFetchers = fetchers();
