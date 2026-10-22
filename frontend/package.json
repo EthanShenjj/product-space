@@ -22,6 +22,7 @@
     "@openai/agents": "^0.17.0",
     "@openai/agents-extensions": "^0.17.0",
     "@supabase/supabase-js": "^2.91.1",
+    "@vercel/functions": "3.10.3",
     "@vercel/sandbox": "^1.10.2",
     "ai": "^7.0.70",
     "clsx": "^2.1.1",

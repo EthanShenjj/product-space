@@ -12,25 +12,30 @@
 
 ## 生产配置
 
-1. 在现有 Supabase 项目执行 `supabase-migrations/20261021_product_news.sql`。表启用 RLS，仅 service role 可读写；浏览器通过只读 API 获取内容。
-2. 设置环境变量：
+在 Vercel 上未配置 Supabase 时，资讯默认使用项目隔离的 **Vercel Runtime Cache**，无需数据库密钥。缓存为空时首次访问自动采集；成功榜单在每天北京时间 09:00 后更新，来源失败最多每 15 分钟重试一次。快照缓存 7 天，可能被平台淘汰，淘汰后按需重建；它不提供长期历史归档。
+
+如需数据库持久化，在现有 Supabase 项目执行 `supabase-migrations/20261021_product_news.sql` 并设置 URL 和 service role key。配置齐全后优先使用 Supabase；数据库连接失败会报告真实错误，不静默换存储。表启用 RLS，仅 service role 可读写。
+
+设置环境变量：
 
 ```dotenv
-NEXT_PUBLIC_SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
 CRON_SECRET=
 X_BEARER_TOKEN=
 PRODUCTHUNT_ACCESS_TOKEN=
 # 可选，推荐配置以提高 GitHub 搜索额度
 GITHUB_TOKEN=
+# 可选，配置两项后优先使用数据库
+NEXT_PUBLIC_SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
 ```
 
 `CRON_SECRET` 使用强随机字符串。X 凭证需要 Recent Search 读取权限及可用额度，Product Hunt 凭证需要 v2 API 读取权限。所有 token 仅保存在服务端，不能使用 `NEXT_PUBLIC_` 前缀。
 
-3. 将 `frontend` 作为 Vercel 项目根目录部署。`vercel.json` 定义 `0 1 * * *`（UTC），即每天北京时间 09:00，调用 `/api/cron/product-news`。Vercel 自动携带 `Authorization: Bearer <CRON_SECRET>`。定时任务在生产部署生效；Hobby 计划可能在目标小时内触发，精确分钟取决于部署平台计划。
-4. 首次部署后可在 Vercel Cron 控制台手动运行，或通过服务端工具携带相同认证请求该端点。其他托管平台也可使用其调度器在同一时间调用该端点。不要把密钥拼进 URL。
+将 `frontend` 作为 Vercel 项目根目录部署。`vercel.json` 定义 `0 1 * * *`（UTC），即每天北京时间 09:00，调用 `/api/cron/product-news`。Vercel 自动携带 `Authorization: Bearer <CRON_SECRET>`。定时任务在生产部署生效；Hobby 计划可能在目标小时内触发，精确分钟取决于部署平台计划。
 
-本次实现只增加项目级定时任务配置，不创建 Codex 个人提醒。未部署、未迁移数据库或未配置凭证时，线上自动采集尚未启用。
+首次部署后可在 Vercel Cron 控制台手动运行，或通过服务端工具携带相同认证请求该端点。其他托管平台需配置 Supabase 并使用其调度器在同一时间调用该端点。不要把密钥拼进 URL。
+
+GitHub 公共 API 无需 token 即可接入，X 和 Product Hunt 缺少凭证时仅在各自区块显示“等待接入”，不阻塞 GitHub 或整页加载。配置 `CRON_SECRET` 后定时更新所有已接入来源，不创建 Codex 个人提醒。
 
 ## 本地运行
 
@@ -41,13 +46,13 @@ npm run news:sync
 npm run dev
 ```
 
-脚本读取 `.env.local`。未配置 Supabase 时，开发模式使用 `data/.product-news.json`，文件已被 Git 忽略。生产环境必须使用 Supabase，不回退到临时文件。已成功采集的当天来源会跳过；`npm run news:sync -- --force` 可强制重抓。没有本地后台调度器，开发时按需执行脚本。
+脚本读取 `.env.local`。未配置 Supabase 时，开发模式使用 `data/.product-news.json`，文件已被 Git 忽略。Vercel 使用 Runtime Cache，其他生产环境必须使用 Supabase，均不回退到函数临时文件。已成功采集的当前发布周期（09:00 到次日 09:00）会跳过；`npm run news:sync -- --force` 可强制重抓。没有本地后台调度器，开发时按需执行脚本。
 
 ## 失败与刷新
 
-各来源并发采集，超时 20 秒；存储请求超时 15 秒。成功来源持久化，即使其他来源失败也不会丢失结果。失败来源保留上次成功的数据和日期，页面明确提示；真实空结果会清空旧榜单。任务部分失败返回 503，允许调度器监控和重试；重复请求会跳过当天成功来源，只重试失败来源。
+各来源并发采集，超时 20 秒；Supabase 请求超时 15 秒。成功来源写入所选存储，即使其他来源失败也不会丢失结果。失败来源保留上次成功的数据和日期，页面明确提示；真实空结果会清空旧榜单。已接入的来源采集失败时任务返回 503，允许监控和重试；未配置凭证的来源不视为采集失败。至少一个来源更新成功且其余来源均成功或待接入时返回 200；全未接入则返回 503。
 
-页面“刷新榜单”只重新读取持久化结果，不触发上游付费 API。公众只读 API 为 `GET /api/product-news`，采集端点必须验证 `CRON_SECRET`。
+页面“刷新榜单”读取已存储结果；仅在使用 Runtime Cache 且缓存缺失、进入新发布周期或失败重试间隔到期时按需采集，不提供公众强制重抓入口。Supabase 模式页面始终只读。公众 API 为 `GET /api/product-news`，定时采集端点必须验证 `CRON_SECRET`。
 
 ## 接口参考
 
@@ -55,3 +60,4 @@ npm run dev
 - [Product Hunt posts](https://api-v2-docs.producthunt.com/query/posts/)
 - [GitHub Repository Search](https://docs.github.com/en/rest/search/search#search-repositories)
 - [Vercel Cron](https://vercel.com/docs/cron-jobs)
+- [Vercel Runtime Cache](https://vercel.com/docs/caching/runtime-cache)

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { emptyEdition, newsDate, type NewsEdition, type NewsProduct } from '@/lib/product-news';
 import { canonicalProductUrl, parseGithub, parseProductHunt, parseX, providers, SourceError, topProducts } from './providers';
-import { syncNews } from './service';
+import { readNewsFeed, syncNews } from './service';
 import type { NewsStore } from './store';
 
 const now = new Date('2026-10-21T01:00:00Z');
@@ -117,5 +117,57 @@ describe('daily synchronization', () => {
     const store = memoryStore();
     store.write.mockRejectedValue(new Error('database unavailable'));
     await expect(syncNews({ now, store, fetchers: fetchers() })).rejects.toThrow('database unavailable');
+  });
+  it('considers unconfigured sources separately from failures when a live source succeeds', async () => {
+    const sourceFetchers = fetchers();
+    sourceFetchers.x.mockRejectedValue(new SourceError('unconfigured', '等待接入'));
+    sourceFetchers.producthunt.mockRejectedValue(new SourceError('unconfigured', '等待接入'));
+    const result = await syncNews({ now, store: memoryStore(), fetchers: sourceFetchers });
+    expect(result.ok).toBe(true);
+    expect(result.successful).toBe(1);
+  });
+  it('refreshes at 09:00 even if the current calendar day was fetched earlier', async () => {
+    const store = memoryStore();
+    const sourceFetchers = fetchers();
+    await syncNews({ now: new Date('2026-10-21T00:59:59Z'), store, fetchers: sourceFetchers });
+    await syncNews({ now, store, fetchers: sourceFetchers });
+    expect(sourceFetchers.github).toHaveBeenCalledTimes(2);
+    await syncNews({ now: new Date('2026-10-21T20:00:00Z'), store, fetchers: sourceFetchers });
+    expect(sourceFetchers.github).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('hosted cache loading', () => {
+  it('bootstraps an empty hosted cache, serves real products, and reuses the snapshot', async () => {
+    const store = { ...memoryStore(), readThrough: true };
+    const sourceFetchers = fetchers();
+    sourceFetchers.x.mockRejectedValue(new SourceError('unconfigured', '等待接入 X 数据源'));
+    sourceFetchers.producthunt.mockRejectedValue(new SourceError('unconfigured', '等待接入 Product Hunt 数据源'));
+    const feed = await readNewsFeed({ now, store, fetchers: sourceFetchers });
+    expect(feed.error).toBeUndefined();
+    expect(feed.editions.find(edition => edition.source === 'github')?.items).toHaveLength(1);
+    expect(feed.editions.find(edition => edition.source === 'x')?.status).toBe('unconfigured');
+    await readNewsFeed({ now: new Date(now.getTime() + 60_000), store, fetchers: sourceFetchers });
+    expect(sourceFetchers.github).toHaveBeenCalledTimes(1);
+    expect(sourceFetchers.x).toHaveBeenCalledTimes(1);
+  });
+  it('backs off a failed bootstrap and retries after 15 minutes', async () => {
+    const store = { ...memoryStore(), readThrough: true };
+    const sourceFetchers = fetchers();
+    sourceFetchers.github.mockRejectedValueOnce(new Error('rate limit'));
+    const failed = await readNewsFeed({ now, store, fetchers: sourceFetchers });
+    expect(failed.error).toBeUndefined();
+    expect(failed.editions.find(edition => edition.source === 'github')?.status).toBe('error');
+    await readNewsFeed({ now: new Date(now.getTime() + 60_000), store, fetchers: sourceFetchers });
+    expect(sourceFetchers.github).toHaveBeenCalledTimes(1);
+    const recovered = await readNewsFeed({ now: new Date(now.getTime() + 15 * 60_000), store, fetchers: sourceFetchers });
+    expect(sourceFetchers.github).toHaveBeenCalledTimes(2);
+    expect(recovered.editions.find(edition => edition.source === 'github')?.status).toBe('ready');
+  });
+  it('does not fetch upstream APIs when reading a durable store', async () => {
+    const sourceFetchers = fetchers();
+    const feed = await readNewsFeed({ now, store: memoryStore(), fetchers: sourceFetchers });
+    expect(feed.error).toBeUndefined();
+    expect(sourceFetchers.github).not.toHaveBeenCalled();
   });
 });

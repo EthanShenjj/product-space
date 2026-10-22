@@ -77,7 +77,7 @@ npm run kb:watch
 npm run news:sync
 ```
 
-产品资讯位于 `/news`，默认计划每天北京时间 09:00 采集。生产启用需要数据库迁移、API 凭证及部署定时任务，详见 [配置说明](frontend/docs/product-news.md)。
+产品资讯位于 `/news`，每天北京时间 09:00 计划更新。Vercel 默认使用托管缓存，GitHub 无需 API 密钥即可展示；X、Product Hunt 需接入凭证，定时任务需 `CRON_SECRET`。可选 Supabase 持久化，详见 [配置说明](frontend/docs/product-news.md)。
 
 OCR 命令需要本机已安装 `poppler` 和 `tesseract`（含 `chi_sim` 与 `eng` 语言包）。
 

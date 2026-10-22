@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { getCache } from '@vercel/functions';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { z } from 'zod';
@@ -14,6 +15,8 @@ const editionSchema = z.object({
 });
 
 export interface NewsStore {
+  // Rebuild disposable hosted snapshots on cache misses; durable stores stay read-only on page views.
+  readThrough?: boolean;
   read(): Promise<NewsEdition[]>;
   write(editions: NewsEdition[]): Promise<void>;
 }
@@ -38,9 +41,30 @@ export function createNewsStore(): NewsStore {
       },
     };
   }
-  if (process.env.NODE_ENV === 'production' || process.env.VERCEL) throw new Error('Product news requires Supabase service credentials in production');
+  if (process.env.VERCEL) {
+    const cache = getCache({ namespace: `productthink-news-v1:${process.env.VERCEL_PROJECT_ID || 'product-space'}` });
+    return {
+      readThrough: true,
+      async read() {
+        const editions = await Promise.all(NEWS_SOURCES.map(async source => {
+          const value = await cache.get(source);
+          if (value == null) return null;
+          const parsed = editionSchema.safeParse(value);
+          // A corrupt/old cache entry is a miss and can be reconstructed.
+          return parsed.success && parsed.data.source === source ? parsed.data : null;
+        }));
+        return editions.filter((edition): edition is NewsEdition => edition !== null);
+      },
+      async write(editions) {
+        await Promise.all(editions.map(edition => cache.set(edition.source, edition, {
+          ttl: 7 * 86_400, name: `ProductThink ${edition.source} news`,
+        })));
+      },
+    };
+  }
+  if (process.env.NODE_ENV === 'production') throw new Error('Product news requires Supabase credentials outside Vercel');
 
-  // Persistent local development cache. Production always uses the database.
+  // Local development cache. Hosted snapshots never use the function filesystem.
   const file = path.join(process.cwd(), 'data', '.product-news.json');
   return {
     async read() {
