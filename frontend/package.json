@@ -14,7 +14,8 @@
     "sparks:generate": "tsx scripts/sparks-generate.ts",
     "kb:process": "tsx scripts/kb-process.ts",
     "kb:watch": "tsx scripts/kb-watch.ts",
-    "sandbox:snapshot": "tsx scripts/sandbox-create-snapshot.ts"
+    "sandbox:snapshot": "tsx scripts/sandbox-create-snapshot.ts",
+    "news:sync": "tsx scripts/product-news-sync.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.44",

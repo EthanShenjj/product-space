@@ -56,3 +56,6 @@ next-env.d.ts
 # Track logs (local development)
 /tmp/track-logs/
 .vercel
+
+# Local product news snapshots (production uses Supabase)
+frontend/data/.product-news.json*

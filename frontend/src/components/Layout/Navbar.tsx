@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
-import { LogOut, MessageSquare, Library, BookOpenText, Sparkles, UserRound } from 'lucide-react';
+import { LogOut, MessageSquare, Library, BookOpenText, Sparkles, UserRound, Newspaper } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface CurrentUser {
@@ -37,17 +37,18 @@ export default function Navbar() {
         { name: '对话', href: '/chat', icon: MessageSquare },
         { name: '知识库', href: '/knowledge', icon: BookOpenText },
         { name: '探索', href: '/explore', icon: Library },
+        { name: '产品资讯', href: '/news', icon: Newspaper },
     ];
 
     return (
         <nav className="app-navbar fixed inset-x-0 top-0 z-50 border-b border-hairline bg-paper/85 backdrop-blur-md">
-            <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div className="max-w-5xl mx-auto px-3 sm:px-4 h-16 flex items-center justify-between gap-2">
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-2 group">
+                <Link href="/" aria-label="ProductThink 首页" className="flex shrink-0 items-center gap-2 group">
                     <div className="w-8 h-8 bg-ink rounded-lg flex items-center justify-center text-paper transition-transform group-hover:scale-105">
                         <Sparkles size={18} fill="currentColor" />
                     </div>
-                    <span className="font-serif text-xl tracking-tight text-ink">
+                    <span className="hidden sm:inline font-serif text-xl tracking-tight text-ink">
                         Product<span className="text-ink-muted">Think.</span>
                     </span>
                 </Link>
@@ -62,21 +63,22 @@ export default function Navbar() {
                             <Link
                                 key={item.name}
                                 href={item.href}
+                                aria-current={isActive ? 'page' : undefined}
                                 className={clsx(
-                                    "flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200",
+                                    "flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap px-2 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink",
                                     isActive
                                         ? "bg-surface-raised text-ink shadow-sm"
                                         : "text-ink-muted hover:text-ink hover:bg-surface-raised/60"
                                 )}
                             >
-                                <Icon size={16} />
+                                <Icon size={16} aria-hidden="true" className="hidden sm:block" />
                                 {item.name}
                             </Link>
                         );
                     })}
                 </div>
 
-                <div className="relative">
+                <div className="relative shrink-0">
                     <button
                         type="button"
                         className="inline-flex h-9 max-w-[132px] items-center gap-2 rounded-full border border-hairline bg-surface px-2 text-sm text-ink-secondary transition hover:border-hairline-strong hover:bg-surface-raised"

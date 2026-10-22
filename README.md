@@ -9,6 +9,7 @@
 - OpenAI Vector Store 托管精华知识库；支持产品、战略、增长与案例检索
 - Gemini、Cloudsway、VectorEngine、OpenRouter 与 OpenAI 的顺序降级；也支持用户临时配置 OpenAI 兼容模型
 - Supabase 对话记录、CMS、认证、反馈及埋点
+- 产品资讯：X、Product Hunt、GitHub 每日软件与 AI 产品 Top 5 卡片榜单，支持来源与类型筛选
 
 ## 项目结构
 
@@ -73,7 +74,10 @@ npm run sparks:scan
 npm run sparks:generate
 npm run kb:process
 npm run kb:watch
+npm run news:sync
 ```
+
+产品资讯位于 `/news`，默认计划每天北京时间 09:00 采集。生产启用需要数据库迁移、API 凭证及部署定时任务，详见 [配置说明](frontend/docs/product-news.md)。
 
 OCR 命令需要本机已安装 `poppler` 和 `tesseract`（含 `chi_sim` 与 `eng` 语言包）。
 
