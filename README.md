@@ -1,3 +1,7 @@
+> 本项目已迁移至 [ProductThink 新仓库](https://github.com/EthanShenjj/productthink)（私有仓库，需有访问权限）。公开站点：[productthink.vercel.app](https://productthink.vercel.app/)。
+>
+> 本仓库保留旧版本和真实提交历史，后续开发在新仓库继续。代码快照迁移不改变原代码的权利及必要署名。
+
 # ProductThink
 
 一个帮助创业者和产品经理验证产品想法的 AI 产品顾问。项目是单一 Next.js 全栈应用：页面、API、Agent 编排、知识库检索与内容工具均使用 TypeScript。
